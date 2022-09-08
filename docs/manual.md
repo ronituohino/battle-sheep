@@ -1,1 +1,1 @@
-# Project manual
+# Manual
