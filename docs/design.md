@@ -3,27 +3,27 @@
 The aim of this project is to create a web page where the user can play a
 somewhat-known
 [Battle Sheep](https://www.blueorangegames.com/index.php/games/battle-sheep)
-boardgame against AI, or watch AI play against eachother.
+board game against AI, or watch AI play against eachother.
 
 This is a project for
-[Tiralabra 2022 period 1](https://tiralabra.github.io/2022_p1/index) course in
+[Tiralabra 2022 period 1](https://tiralabra.github.io/2022_p1/index) course at
 University of Helsinki.
 
 ## Implementation
 
 ### General
 
-All documentation, code and comments will be in English.
+**All documentation, code and comments will be in English.**
 
-Most of the project code will be in
-[TypeScript](https://www.typescriptlang.org/).
+**Most of the project code will be in
+[TypeScript](https://www.typescriptlang.org/).**
 
 The rules of the board game are explained very well in a video embedded to
 [this site](https://www.blueorangegames.com/index.php/games/battle-sheep).
 
 My implementation will ignore the building-phase and will instead offer some
-ready-built boards to choose from and possibly a sandbox where the user can
-build any kind of board to play on.
+ready-built boards to choose from, and possibly a sandbox where the user can
+build their own board to play on.
 
 My implementation will support 1-4 AI playing on the same board. However,
 depending on the performance of the algorithm this might be reduced to just 1-2
@@ -33,10 +33,12 @@ AI.
 
 I will use the [React](https://reactjs.org/) framework, with
 [Vite](https://vitejs.dev/) as the module bundler. I might also use a UI
-framework to speed up development.
+framework to speed up development. The app will be a single-page-app (SPA).
 
 I will use [Jest](https://jestjs.io/) for unit testing. I might also use
 [Cypress](https://www.cypress.io/) for integration testing.
+
+The website will be deployed to [Firebase](https://firebase.google.com/).
 
 I will try to detach the TypeScript code as much as possible from the rest of
 the web page code to make it easier to review.
@@ -58,10 +60,8 @@ The actual state of a tile can be represented with a null value or an integer:
 - Player 2 sheep are mapped from 101-116. (Tile with 1-16 sheep, player 2)
 - ...
 
-I need to implement a heuristic to evaluate a "value" for each tile in a certain
-state of a game, and then derive a value that represents who is winning in the
-game.  
-**Implementation details are still unclear.**
+I need to implement a heuristic to evaluate a "value" for a given tile in a
+certain state of a game. **Implementation details are still unclear.**
 
 Then I need to make a [minimax algorithm](https://en.wikipedia.org/wiki/Minimax)
 to make the AI work. This could then be optimized with
@@ -76,6 +76,17 @@ completion time could vary significantly based on the scale of the board, the
 amount of players, and the state of the game.
 
 ### UI
+
+The web page UI has 2 essential screens, and 2 optional screens:
+
+- Essential (on the right)
+  - Game configuration
+  - Game screen
+- Optional (on the left)
+  - Level builder
+  - Main menu
+
+![](/docs/images/ui.png)
 
 ## Info for course
 
