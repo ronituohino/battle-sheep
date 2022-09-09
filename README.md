@@ -9,10 +9,10 @@ https://battle-sheep-7c192.web.app/
 
 ## Documentation
 
-[Design document](./docs/design.md)  
-[Manual](./docs/manual.md)  
-[Performance report](./docs/performance.md)  
-[Testing report](./docs/testing.md)
+[Design document](./docs/design.md) (Määrittelydokumentti)  
+[Manual](./docs/manual.md) (Käyttöohje)  
+[Performance report](./docs/performance.md) (Toteutusdokumentti)  
+[Testing report](./docs/testing.md) (Testausdokumentti)
 
 ## Weekly reports
 
