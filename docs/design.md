@@ -18,8 +18,8 @@ University of Helsinki.
 **Most of the project code will be in
 [TypeScript](https://www.typescriptlang.org/).**
 
-The rules of the board game are explained very well in a video embedded to
-[this site](https://www.blueorangegames.com/index.php/games/battle-sheep).
+The rules of the board game are explained very well in a video embedded in the
+[Battle Sheep official site](https://www.blueorangegames.com/index.php/games/battle-sheep).
 
 My implementation will ignore the building-phase and will instead offer some
 ready-built boards to choose from, and possibly a sandbox where the user can

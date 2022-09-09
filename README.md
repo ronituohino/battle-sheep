@@ -16,4 +16,4 @@ https://battle-sheep-7c192.web.app/
 
 ## Weekly reports
 
-[Week 1](./docs/weekly_reports/week1.md)
+[Week 1](./docs/week1_report.md)
