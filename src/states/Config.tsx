@@ -15,8 +15,11 @@ import {
   Badge,
   Flex,
 } from "@chakra-ui/react";
+
 import type { FormikProps } from "formik";
 import { ConfigSchema } from "../App";
+
+import { levels } from "../utils/game";
 
 export type ConfigProps = {
   formik: FormikProps<ConfigSchema>;
@@ -36,8 +39,11 @@ export function Config({ formik }: ConfigProps) {
             display="flex"
             flexDir="column"
           >
-            <Radio value="one">One</Radio>
-            <Radio value="two">Two</Radio>
+            {Object.entries(levels).map(([key, value]) => (
+              <Radio key={key} value={key}>
+                {value.name}
+              </Radio>
+            ))}
           </RadioGroup>
 
           <Text mt="4">Game configuration</Text>

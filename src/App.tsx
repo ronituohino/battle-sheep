@@ -5,11 +5,12 @@ import { assertUnreachable } from "./utils/typescript";
 import { Config } from "./states/Config";
 import { Game } from "./states/Game";
 import { Box } from "@chakra-ui/react";
+import { levels } from "./utils/game";
 
 export type AppState = "config" | "game";
 
 export type ConfigSchema = {
-  level: string;
+  level: keyof typeof levels;
   watchMode: boolean;
   aiPlayers: number;
 };
