@@ -52,7 +52,15 @@ export function Game({ setAppState, config }: GameProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [sheepToMove, setSheepToMove] = useState(1);
 
-  function handleTileClick(coords: Coordinate, highlighted: boolean) {
+  function handleTileClick(
+    coords: Coordinate,
+    highlighted: boolean,
+    selected: boolean
+  ) {
+    if (selected) {
+      return;
+    }
+
     if (highlighted) {
       if (gameState.selectingStart) {
         // Selecting starting tile
@@ -65,10 +73,21 @@ export function Game({ setAppState, config }: GameProps) {
         // Make a move
         onOpen();
       }
-    } else {
+      return;
+    }
+
+    // Select a tile
+    const boardValue = gameState.board[coords[0]][coords[1]];
+
+    // Check if the tile has sheep on it
+    if (boardValue !== undefined && boardValue > 0) {
       const moves = getPossibleMoveTiles(gameState.board, coords);
       setHighlightedHexes(moves);
       setSelectedHex(coords);
+    } else {
+      // Clear selection
+      setHighlightedHexes(undefined);
+      setSelectedHex(undefined);
     }
   }
 
@@ -97,9 +116,10 @@ export function Game({ setAppState, config }: GameProps) {
                 key={`${x}${y}`}
                 x={x}
                 y={y}
+                gameState={gameState}
                 highlighted={highlighted}
                 selected={selected}
-                click={() => handleTileClick([x, y], highlighted)}
+                click={() => handleTileClick([x, y], highlighted, selected)}
               />
             );
           })
