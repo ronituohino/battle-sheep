@@ -35,8 +35,9 @@ I will use the [React](https://reactjs.org/) framework, with
 [Vite](https://vitejs.dev/) as the module bundler. I might also use a UI
 framework to speed up development. The app will be a single-page-app (SPA).
 
-I will use [Jest](https://jestjs.io/) for unit testing. I might also use
-[Cypress](https://www.cypress.io/) for integration testing.
+I will use [Vitest](https://vitest.dev/) for unit
+testing. I might also use [Cypress](https://www.cypress.io/) for integration
+testing.
 
 The website will be deployed to [Firebase](https://firebase.google.com/).
 

@@ -1,5 +1,4 @@
 import { fromBoardValue, GameState } from "../utils/game";
-import { Text } from "@chakra-ui/react";
 
 export type TileProps = {
   x: number;
@@ -38,7 +37,7 @@ export const Tile = ({
   }
 
   const { playerIndex, sheep } = fromBoardValue(
-    gameState.board[x][y] as number
+    gameState.board[x][y] as number,
   );
 
   return (

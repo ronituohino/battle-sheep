@@ -62,7 +62,7 @@ export const movement = {
 
 export function initializeGameState(config: ConfigSchema): GameState {
   // Initialize players
-  let players: Player[] = [];
+  const players: Player[] = [];
   let playerAmount = 0;
   if (!config.watchMode) {
     players.push({ name: "You", color: playerColors[playerAmount] });
@@ -77,7 +77,7 @@ export function initializeGameState(config: ConfigSchema): GameState {
   // Initialize board
   // Deep copy level object
   const level = JSON.parse(
-    JSON.stringify(levels[config.level])
+    JSON.stringify(levels[config.level]),
   ) as typeof levels[keyof typeof levels];
 
   return {
@@ -100,14 +100,14 @@ export function initializeGameState(config: ConfigSchema): GameState {
 // Get tiles to which player can move, given a board and a selected tile
 export function getPossibleMoveTiles(
   board: TileArray,
-  selectedTile: Coordinate
+  selectedTile: Coordinate,
 ): CoordinateArray | null {
   let boundaries: [[number, number]] | null = null;
 
   // Select movement direction
-  Object.values(movement).forEach(move => {
+  Object.values(movement).forEach((move) => {
     let boundaryFound = false;
-    let coords = [selectedTile[0], selectedTile[1]];
+    const coords = [selectedTile[0], selectedTile[1]];
 
     // Move there until we hit an null tile or a sheep (!== 0)
     while (!boundaryFound) {
@@ -120,7 +120,7 @@ export function getPossibleMoveTiles(
 
         const boundary = [coords[0] - move[0], coords[1] - move[1]] as [
           number,
-          number
+          number,
         ];
 
         // Don't add the currently selected tile to the boundaries
@@ -141,13 +141,14 @@ export function getPossibleMoveTiles(
   return boundaries;
 }
 
+// Moves sheep from one tile to another
 export function moveSheep(
   gameState: GameState,
   setGameState: (newGameState: GameState) => void,
   from: Coordinate | null,
   to: Coordinate | null,
   amount: number,
-  playerIndex: number
+  playerIndex: number,
 ) {
   if (from === null || to === null) {
     return;

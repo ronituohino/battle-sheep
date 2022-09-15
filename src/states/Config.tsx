@@ -1,18 +1,15 @@
 import {
   Checkbox,
   Slider,
-  SliderMark,
   SliderFilledTrack,
   SliderThumb,
   SliderTrack,
   RadioGroup,
   Radio,
   Button,
-  Center,
   Text,
   Box,
   Heading,
-  Badge,
   Flex,
 } from "@chakra-ui/react";
 
@@ -34,7 +31,7 @@ export function Config({ formik }: ConfigProps) {
         <form onSubmit={formik.handleSubmit}>
           <Text>Level select</Text>
           <RadioGroup
-            onChange={value => formik.setFieldValue("level", value)}
+            onChange={(value) => formik.setFieldValue("level", value)}
             value={formik.values.level}
             display="flex"
             flexDir="column"
@@ -63,7 +60,7 @@ export function Config({ formik }: ConfigProps) {
               min={1}
               max={3}
               value={formik.values.aiPlayers}
-              onChange={value => formik.setFieldValue("aiPlayers", value)}
+              onChange={(value) => formik.setFieldValue("aiPlayers", value)}
             >
               <SliderTrack>
                 <SliderFilledTrack />
