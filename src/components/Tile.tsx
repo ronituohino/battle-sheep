@@ -1,4 +1,4 @@
-import type { GameState } from "../utils/game";
+import { fromBoardValue, GameState } from "../utils/game";
 import { Text } from "@chakra-ui/react";
 
 export type TileProps = {
@@ -37,28 +37,48 @@ export const Tile = ({
     };
   }
 
+  const { playerIndex, sheep } = fromBoardValue(
+    gameState.board[x][y] as number
+  );
+
   return (
-    <>
-      <svg
-        viewBox="-10 -10 120 120"
-        width="150px"
-        style={{
-          position: "absolute",
-          left: `calc(calc(${x} * 140px) - calc(${y} * 70px))`,
-          top: `calc(${y} * 105px)`,
-        }}
+    <svg
+      viewBox="-10 -10 120 120"
+      width="100px"
+      style={{
+        position: "absolute",
+        left: `calc(calc(${x} * 100px) - calc(${y} * 50px))`,
+        top: `calc(${y} * 80px)`,
+      }}
+    >
+      <g
+        style={{ cursor: sheep > 1 || highlighted ? "pointer" : "auto" }}
+        onClick={click}
       >
-        <g style={{ cursor: "pointer" }} onClick={click}>
-          <polygon
-            points="50 0,100 25,100 75, 50 100,0 75,0 25"
-            fill="white"
-            {...properties}
-          />
-          <text x="50" y="50">
-            {gameState.board[x][y]}
+        <polygon
+          points="50 0,100 25,100 75, 50 100,0 75,0 25"
+          fill={
+            playerIndex === -1 ? "white" : gameState.players[playerIndex].color
+          }
+          {...properties}
+        />
+
+        {sheep > 0 && (
+          <text
+            x="50"
+            y="55"
+            style={{
+              dominantBaseline: "middle",
+              textAnchor: "middle",
+              fontSize: 30,
+              userSelect: "none",
+              WebkitUserSelect: "none",
+            }}
+          >
+            {sheep}
           </text>
-        </g>
-      </svg>
-    </>
+        )}
+      </g>
+    </svg>
   );
 };

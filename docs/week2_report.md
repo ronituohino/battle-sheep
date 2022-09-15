@@ -1,6 +1,6 @@
 # Week 2
 
-**Project hours this week: 9**
+**Project hours this week: 11**
 
 ...
 

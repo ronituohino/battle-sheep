@@ -1,22 +1,4 @@
-import {
-  Button,
-  Heading,
-  Flex,
-  Box,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Heading, Flex, Box } from "@chakra-ui/react";
 import { useState } from "react";
 
 import { AppState, ConfigSchema } from "../App";
@@ -26,31 +8,44 @@ import {
   GameState,
   getPossibleMoveTiles,
   initializeGameState,
+  moveSheep,
 } from "../utils/game";
 
 import { Tile } from "../components/Tile";
+import { MoveSheepModal } from "../components/MoveSheepModal";
+import { Players } from "../components/Players";
 
 export type GameProps = {
   setAppState: (state: AppState) => void;
   config: ConfigSchema;
 };
 
+export type Move = {
+  from: Coordinate | null;
+  to: Coordinate;
+};
+
 export function Game({ setAppState, config }: GameProps) {
-  const [gameState, setGameState] = useState<GameState>(
+  const [gameState, setGameState] = useState<GameState>(() =>
     initializeGameState(config)
   );
 
   // Tile states
-  const [selectedHex, setSelectedHex] = useState<Coordinate | undefined>(
-    undefined
-  );
-  const [highlightedHexes, setHighlightedHexes] = useState<
-    CoordinateArray | undefined
-  >(gameState.startTiles);
+  const [selectedHex, setSelectedHex] = useState<Coordinate | null>(null);
+  const [highlightedHexes, setHighlightedHexes] =
+    useState<CoordinateArray | null>(gameState.startTiles);
 
   // Move sheep modal
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [sheepToMove, setSheepToMove] = useState(1);
+  const [move, setMove] = useState<Move | null>(null);
+  function makeMove(amount: number) {
+    if (!move) {
+      return;
+    }
+    moveSheep(gameState, setGameState, move?.from, move?.to, amount, 0);
+    setMove(null);
+    setHighlightedHexes(null);
+    setSelectedHex(null);
+  }
 
   function handleTileClick(
     coords: Coordinate,
@@ -68,10 +63,10 @@ export function Game({ setAppState, config }: GameProps) {
         newBoard[coords[0]][coords[1]] = 16;
 
         setGameState({ ...gameState, board: newBoard, selectingStart: false });
-        setHighlightedHexes(undefined);
+        setHighlightedHexes(null);
       } else {
         // Make a move
-        onOpen();
+        setMove({ from: selectedHex, to: coords });
       }
       return;
     }
@@ -79,15 +74,15 @@ export function Game({ setAppState, config }: GameProps) {
     // Select a tile
     const boardValue = gameState.board[coords[0]][coords[1]];
 
-    // Check if the tile has sheep on it
-    if (boardValue !== undefined && boardValue > 0) {
+    // Check if the tile has more than 1 sheep on it
+    if (boardValue !== null && boardValue > 1) {
       const moves = getPossibleMoveTiles(gameState.board, coords);
       setHighlightedHexes(moves);
       setSelectedHex(coords);
     } else {
       // Clear selection
-      setHighlightedHexes(undefined);
-      setSelectedHex(undefined);
+      setHighlightedHexes(null);
+      setSelectedHex(null);
     }
   }
 
@@ -96,13 +91,15 @@ export function Game({ setAppState, config }: GameProps) {
       <Flex gap="4">
         <Button onClick={() => setAppState("config")}>Return</Button>
         <Heading>Battle Sheep</Heading>
+
+        {gameState && <Players gameState={gameState} />}
       </Flex>
 
       <Box position="relative" left="50%">
         {gameState.board.map((horizontalHexes, x) =>
           horizontalHexes.map((hex, y) => {
-            if (hex === undefined) {
-              return undefined;
+            if (hex === null) {
+              return null;
             }
             const highlighted = highlightedHexes
               ? highlightedHexes.some(coord => coord[0] === x && coord[1] === y)
@@ -126,35 +123,7 @@ export function Game({ setAppState, config }: GameProps) {
         )}
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Move sheep</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Slider
-              maxWidth="300px"
-              marginRight="3"
-              min={1}
-              max={3}
-              value={sheepToMove}
-              onChange={setSheepToMove}
-            >
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
-            <Text>{sheepToMove}</Text>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={onClose}>
-              Move
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
     </Box>
   );
 }

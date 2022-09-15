@@ -54,7 +54,7 @@ store the game board in a 2d array mapped to the hex grid with
 
 The actual state of a tile can be represented with a null value or an integer:
 
-- undefined means a missing tile in the map.
+- null means a missing tile in the map.
 - 0 means an empty tile in the map. (Tile with no sheep on it)
 - Player 1 sheep are mapped from 001-016. (Tile with 1-16 sheep, player 1)
 - Player 2 sheep are mapped from 101-116. (Tile with 1-16 sheep, player 2)
