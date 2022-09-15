@@ -1,9 +1,8 @@
-import { fromBoardValue, GameState } from "../utils/game";
-
 export type TileProps = {
   x: number;
   y: number;
-  gameState: GameState;
+  sheep: number;
+  color: string;
   highlighted: boolean;
   selected: boolean;
   click: () => void;
@@ -12,7 +11,8 @@ export type TileProps = {
 export const Tile = ({
   x,
   y,
-  gameState,
+  sheep,
+  color,
   highlighted,
   selected,
   click,
@@ -36,10 +36,6 @@ export const Tile = ({
     };
   }
 
-  const { playerIndex, sheep } = fromBoardValue(
-    gameState.board[x][y] as number,
-  );
-
   return (
     <svg
       viewBox="-10 -10 120 120"
@@ -56,9 +52,7 @@ export const Tile = ({
       >
         <polygon
           points="50 0,100 25,100 75, 50 100,0 75,0 25"
-          fill={
-            playerIndex === -1 ? "white" : gameState.players[playerIndex].color
-          }
+          fill={color}
           {...properties}
         />
 

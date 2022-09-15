@@ -1,25 +1,18 @@
+import type { AppState, ConfigSchema } from "../types";
+
 import { useFormik } from "formik";
 import { useState } from "react";
-import { assertUnreachable } from "./utils/typescript";
+import { assertUnreachable } from "../types";
 
-import { Config } from "./states/Config";
-import { Game } from "./states/Game";
+import { Config } from "./Config";
+import { Game } from "./Game";
 import { Box } from "@chakra-ui/react";
-import { levels } from "./utils/game";
-
-export type AppState = "config" | "game";
-
-export type ConfigSchema = {
-  level: keyof typeof levels;
-  watchMode: boolean;
-  aiPlayers: number;
-};
 
 export function App() {
   const [appState, setAppState] = useState<AppState>("config");
 
   const initialValues: ConfigSchema = {
-    level: "one",
+    levelName: "one",
     watchMode: false,
     aiPlayers: 1,
   };

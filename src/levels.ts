@@ -1,0 +1,30 @@
+export const levels = {
+  one: {
+    name: "One",
+    sizeX: 4,
+    sizeY: 6,
+    board: [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, null, 0, 0, 0],
+      [0, 0, 0, null, null, 0],
+    ],
+    startTiles: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [1, 4],
+      [2, 4],
+      [3, 5],
+      [2, 3],
+      [2, 2],
+      [3, 2],
+      [3, 1],
+    ],
+  },
+  two: { name: "Two", sizeX: 1, sizeY: 1, board: [[0]], startTiles: [[0, 0]] },
+};

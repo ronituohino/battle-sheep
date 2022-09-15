@@ -1,14 +1,14 @@
-import type { GameState } from "../utils/game";
+import type { Player } from "../types";
 import { OrderedList, ListItem } from "@chakra-ui/react";
 
 export type PlayersProps = {
-  gameState: GameState;
+  players: Player[] | null;
 };
 
-export function Players({ gameState }: PlayersProps) {
+export function Players({ players }: PlayersProps) {
   return (
     <OrderedList>
-      {gameState.players.map((player) => (
+      {players?.map((player) => (
         <ListItem key={player.color}>{player.name}</ListItem>
       ))}
     </OrderedList>

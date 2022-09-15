@@ -1,66 +1,16 @@
-import { ConfigSchema } from "../App";
-
-export type GameState = {
-  players: Player[];
-  sizeX: number;
-  sizeY: number;
-  board: TileArray;
-  selectingStart: boolean;
-  startTiles: CoordinateArray;
-};
-
-export type Player = {
-  name: string;
-  color: string;
-};
-
-export type Coordinate = number[];
-export type CoordinateArray = Coordinate[];
-
-export type TileArray = (number | null)[][];
+import type {
+  ConfigSchema,
+  Player,
+  Coordinate,
+  CoordinateArray,
+  Board,
+  Level,
+} from "./types";
+import { levels } from "./levels";
 
 export const playerColors = ["#f15bb5", "#fee440", "#00bbf9", "#9b5de5"];
-export const levels = {
-  one: {
-    name: "One",
-    sizeX: 4,
-    sizeY: 6,
-    board: [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0, 0],
-      [0, null, 0, 0, 0],
-      [0, 0, 0, null, null, 0],
-    ],
-    startTiles: [
-      [0, 0],
-      [1, 0],
-      [2, 0],
-      [3, 0],
-      [0, 1],
-      [0, 2],
-      [0, 3],
-      [1, 4],
-      [2, 4],
-      [3, 5],
-      [2, 3],
-      [2, 2],
-      [3, 2],
-      [3, 1],
-    ],
-  },
-  two: { name: "Two", sizeX: 1, sizeY: 1, board: [[0]], startTiles: [[0, 0]] },
-};
 
-export const movement = {
-  northEast: [0, 1],
-  east: [1, 0],
-  southEast: [1, 1],
-  southWest: [0, -1],
-  west: [-1, 0],
-  northWest: [-1, -1],
-};
-
-export function initializeGameState(config: ConfigSchema): GameState {
+export function initializeGame(config: ConfigSchema) {
   // Initialize players
   const players: Player[] = [];
   let playerAmount = 0;
@@ -74,11 +24,8 @@ export function initializeGameState(config: ConfigSchema): GameState {
     playerAmount++;
   }
 
-  // Initialize board
   // Deep copy level object
-  const level = JSON.parse(
-    JSON.stringify(levels[config.level]),
-  ) as typeof levels[keyof typeof levels];
+  const level = JSON.parse(JSON.stringify(levels[config.levelName])) as Level;
 
   return {
     players,
@@ -97,12 +44,21 @@ export function initializeGameState(config: ConfigSchema): GameState {
  *  export function getBoardEdges(board: Board): [[number, number]] {}
  * */
 
+export const movement = {
+  northEast: [0, 1],
+  east: [1, 0],
+  southEast: [1, 1],
+  southWest: [0, -1],
+  west: [-1, 0],
+  northWest: [-1, -1],
+};
+
 // Get tiles to which player can move, given a board and a selected tile
 export function getPossibleMoveTiles(
-  board: TileArray,
+  board: Board,
   selectedTile: Coordinate,
 ): CoordinateArray | null {
-  let boundaries: [[number, number]] | null = null;
+  let boundaries: CoordinateArray | null = null;
 
   // Select movement direction
   Object.values(movement).forEach((move) => {
@@ -141,38 +97,53 @@ export function getPossibleMoveTiles(
   return boundaries;
 }
 
-// Moves sheep from one tile to another
+// Moves sheep from one tile to another and return new board
 export function moveSheep(
-  gameState: GameState,
-  setGameState: (newGameState: GameState) => void,
+  board: Board | null,
   from: Coordinate | null,
   to: Coordinate | null,
   amount: number,
   playerIndex: number,
-) {
-  if (from === null || to === null) {
+): Board | undefined {
+  if (board === null || from === null || to === null) {
     return;
   }
 
-  const newBoard = [...gameState.board];
+  const newBoard = [...board];
   const previous = newBoard[from[0]][from[1]];
   if (previous === null || previous <= amount) {
     return;
   }
 
-  newBoard[from[0]][from[1]] = toBoardValue(previous - amount, playerIndex);
-  newBoard[to[0]][to[1]] = toBoardValue(amount, playerIndex);
+  newBoard[from[0]][from[1]] = toBoardNumber(previous - amount, playerIndex);
+  newBoard[to[0]][to[1]] = toBoardNumber(amount, playerIndex);
 
-  const newGameState = { ...gameState, board: newBoard };
-  setGameState(newGameState);
+  return newBoard;
+}
+
+// Set an amount of sheep to board and return new board
+export function setSheep(
+  board: Board | null,
+  coord: Coordinate,
+  amount: number,
+  playerIndex: number,
+): Board | undefined {
+  if (board === null) {
+    return;
+  }
+
+  const newBoard = [...board];
+  newBoard[coord[0]][coord[1]] = toBoardNumber(amount, playerIndex);
+
+  return newBoard;
 }
 
 /**
- * Transform playerIndex and sheep amount to boardValue
+ * Transform playerIndex and sheep amount (TileInfo) to boardValue
  * player 0, 16 sheep -> 016 -> 16
  * player 1, 5 sheep -> 105
  * */
-export function toBoardValue(amount: number, playerIndex: number) {
+export function toBoardNumber(amount: number, playerIndex: number) {
   return playerIndex * 100 + amount;
 }
 
@@ -181,7 +152,7 @@ export function toBoardValue(amount: number, playerIndex: number) {
  * 016 -> player 0, 16 sheep
  * 105 -> player 1, 5 sheep
  * */
-export function fromBoardValue(value: number) {
+export function fromBoardNumber(value: number) {
   const playerIndex = value > 0 ? Math.floor(value / 100) : -1;
   const sheep = value > 0 ? value - playerIndex * 100 : 0;
 

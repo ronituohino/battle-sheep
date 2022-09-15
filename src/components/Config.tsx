@@ -1,3 +1,6 @@
+import type { FormikProps } from "formik";
+import type { ConfigSchema } from "../types";
+
 import {
   Checkbox,
   Slider,
@@ -13,10 +16,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 
-import type { FormikProps } from "formik";
-import { ConfigSchema } from "../App";
-
-import { levels } from "../utils/game";
+import { levels } from "../levels";
 
 export type ConfigProps = {
   formik: FormikProps<ConfigSchema>;
@@ -32,7 +32,7 @@ export function Config({ formik }: ConfigProps) {
           <Text>Level select</Text>
           <RadioGroup
             onChange={(value) => formik.setFieldValue("level", value)}
-            value={formik.values.level}
+            value={formik.values.levelName}
             display="flex"
             flexDir="column"
           >
