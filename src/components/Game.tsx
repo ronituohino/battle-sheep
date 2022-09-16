@@ -84,7 +84,16 @@ export function Game({ setAppState, config }: GameProps) {
         setHighlightedHexes(null);
       } else if (selectedHex !== null) {
         // Make a move
-        setMove({ from: selectedHex, to: coords });
+        const value = boardState[selectedHex[0]][selectedHex[1]];
+        if (!value) {
+          return;
+        }
+
+        setMove({
+          from: selectedHex,
+          to: coords,
+          maxSheep: fromBoardNumber(value)["sheep"] - 1,
+        });
       }
       return;
     }

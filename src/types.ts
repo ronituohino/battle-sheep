@@ -29,6 +29,7 @@ export type Board = (number | null)[][];
 export type Move = {
   from: Coordinate;
   to: Coordinate;
+  maxSheep: number;
 };
 
 // TS exhaustive type check (on switch statements)

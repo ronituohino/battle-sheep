@@ -1,3 +1,5 @@
+import type { Move } from "../types";
+
 import { useState } from "react";
 
 import {
@@ -16,8 +18,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 
-import type { Move } from "../states/Game";
-
 export type MoveSheepModalProps = {
   move: Move | null;
   setMove: (newMove: Move | null) => void;
@@ -32,7 +32,15 @@ export function MoveSheepModal({
   const [sheepToMove, setSheepToMove] = useState(1);
 
   return (
-    <Modal isOpen={move !== null} onClose={() => setMove(null)}>
+    <Modal
+      isOpen={move !== null}
+      onClose={() => {
+        // Reset sheep to move
+        setSheepToMove(1);
+
+        setMove(null);
+      }}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Move sheep</ModalHeader>
@@ -42,7 +50,7 @@ export function MoveSheepModal({
             maxWidth="300px"
             marginRight="3"
             min={1}
-            max={3}
+            max={move?.maxSheep}
             value={sheepToMove}
             onChange={setSheepToMove}
           >
@@ -55,7 +63,15 @@ export function MoveSheepModal({
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" onClick={() => makeMove(sheepToMove)}>
+          <Button
+            colorScheme="blue"
+            onClick={() => {
+              // Reset sheep to move
+              setSheepToMove(1);
+
+              makeMove(sheepToMove);
+            }}
+          >
             Move
           </Button>
         </ModalFooter>
