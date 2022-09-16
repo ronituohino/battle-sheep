@@ -5,7 +5,7 @@ Battle Sheep board game website for
 University of Helsinki.
 
 This project is (or was at some point) live at
-https://battle-sheep-7c192.web.app/
+https://battle-sheep-game.web.app/
 
 ## Documentation
 
@@ -17,3 +17,7 @@ https://battle-sheep-7c192.web.app/
 ## Weekly reports
 
 [Week 1](./docs/week1_report.md)
+
+## Test coverage
+
+https://battle-sheep-coverage.web.app/

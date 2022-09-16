@@ -1,12 +1,26 @@
 {
-  "hosting": {
-    "public": "dist",
-    "ignore": [],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "game",
+      "public": "dist",
+      "ignore": [],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "coverage",
+      "public": "coverage",
+      "ignore": [],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
 }

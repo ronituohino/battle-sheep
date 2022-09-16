@@ -2,7 +2,7 @@ import type { Player } from "../types";
 import { OrderedList, ListItem } from "@chakra-ui/react";
 
 export type PlayersProps = {
-  players: Player[] | null;
+  players: Player[] | undefined;
 };
 
 export function Players({ players }: PlayersProps) {

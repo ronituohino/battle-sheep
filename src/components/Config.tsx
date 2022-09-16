@@ -31,7 +31,7 @@ export function Config({ formik }: ConfigProps) {
         <form onSubmit={formik.handleSubmit}>
           <Text>Level select</Text>
           <RadioGroup
-            onChange={(value) => formik.setFieldValue("level", value)}
+            onChange={(value) => formik.setFieldValue("levelName", value)}
             value={formik.values.levelName}
             display="flex"
             flexDir="column"

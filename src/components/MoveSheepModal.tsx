@@ -1,4 +1,4 @@
-import type { Move } from "../types";
+import type { MovePlot } from "../types";
 
 import { useState } from "react";
 
@@ -19,8 +19,8 @@ import {
 } from "@chakra-ui/react";
 
 export type MoveSheepModalProps = {
-  move: Move | null;
-  setMove: (newMove: Move | null) => void;
+  move: MovePlot | undefined;
+  setMove: (newMove: MovePlot | undefined) => void;
   makeMove: (amount: number) => void;
 };
 
@@ -33,12 +33,12 @@ export function MoveSheepModal({
 
   return (
     <Modal
-      isOpen={move !== null}
+      isOpen={move !== undefined}
       onClose={() => {
         // Reset sheep to move
         setSheepToMove(1);
 
-        setMove(null);
+        setMove(undefined);
       }}
     >
       <ModalOverlay />

@@ -4,7 +4,7 @@ import type {
   GameState,
   Coordinate,
   CoordinateArray,
-  Move,
+  MovePlot,
   Board,
   Player,
 } from "../types";
@@ -17,6 +17,7 @@ import {
   moveSheep,
   setSheep,
   fromBoardNumber,
+  nextTurn,
 } from "../game";
 
 import { Tile } from "../components/Tile";
@@ -29,35 +30,33 @@ export type GameProps = {
 };
 
 export function Game({ setAppState, config }: GameProps) {
-  // Main state
-  const [boardState, setBoardState] = useState<Board | null>(null);
-  const [players, setPlayers] = useState<Player[] | null>(null);
+  // Main states
+  const [board, setBoard] = useState<Board>();
+  const [players, setPlayers] = useState<Player[]>();
+  const [game, setGame] = useState<GameState>();
 
   // UI
-  // Game state
-  const [gameState, setGameState] = useState<GameState | null>(null);
-
   // Tile states
-  const [selectedHex, setSelectedHex] = useState<Coordinate | null>(null);
-  const [highlightedHexes, setHighlightedHexes] =
-    useState<CoordinateArray | null>(null);
+  const [selectedHex, setSelectedHex] = useState<Coordinate>();
+  const [highlightedHexes, setHighlightedHexes] = useState<CoordinateArray>();
 
   // Move sheep modal
-  const [move, setMove] = useState<Move | null>(null);
+  const [move, setMove] = useState<MovePlot>();
   // Called from MoveSheepModal.tsx
   function makeMove(amount: number) {
-    if (!move) {
+    if (!move || !board) {
       return;
     }
-    const newBoard = moveSheep(boardState, move?.from, move?.to, amount, 0);
-    if (newBoard) {
-      setBoardState(newBoard);
-    }
-    // This closes the modal
-    setMove(null);
 
-    setHighlightedHexes(null);
-    setSelectedHex(null);
+    setBoard(moveSheep(board, move?.from, move?.to, amount, 0));
+
+    // This closes the modal
+    setMove(undefined);
+
+    setHighlightedHexes(undefined);
+    setSelectedHex(undefined);
+
+    finishTurn();
   }
 
   // Tile click handler
@@ -66,60 +65,65 @@ export function Game({ setAppState, config }: GameProps) {
     highlighted: boolean,
     selected: boolean,
   ) {
-    if (boardState === null || gameState === null) {
+    if (selected || !board || !game || !players) {
       return;
     }
-    if (selected) {
-      return;
-    }
-    if (highlighted) {
-      if (gameState.selectingStart) {
-        // Selecting starting tile
-        const newBoard = setSheep(boardState, coords, 16, 0);
-        if (newBoard) {
-          setBoardState(newBoard);
-        }
 
-        setGameState({ selectingStart: false });
-        setHighlightedHexes(null);
-      } else if (selectedHex !== null) {
-        // Make a move
-        const value = boardState[selectedHex[0]][selectedHex[1]];
+    if (highlighted) {
+      if (game.selectingStart) {
+        // Selecting starting tile
+        setBoard(setSheep(board, coords, 16, 0));
+
+        setHighlightedHexes(undefined);
+        finishTurn();
+      } else if (selectedHex) {
+        // Check if there are sheep to move
+        const value = board[selectedHex[0]][selectedHex[1]];
         if (!value) {
           return;
         }
 
+        // Bring up MoveSheepModal
         setMove({
           from: selectedHex,
           to: coords,
-          maxSheep: fromBoardNumber(value)["sheep"] - 1,
+          maxSheep: fromBoardNumber(value).sheep - 1,
         });
       }
       return;
     }
 
     // Select a tile
-    const boardValue = boardState[coords[0]][coords[1]];
+    const boardValue = board[coords[0]][coords[1]];
 
     // Check if the tile has more than 1 sheep on it
-    if (boardValue !== null && boardValue > 1) {
-      const moves = getPossibleMoveTiles(boardState, coords);
+    if (boardValue > 1) {
+      const moves = getPossibleMoveTiles(board, coords);
       setHighlightedHexes(moves);
       setSelectedHex(coords);
     } else {
       // Clear selection
-      setHighlightedHexes(null);
-      setSelectedHex(null);
+      setHighlightedHexes(undefined);
+      setSelectedHex(undefined);
     }
+  }
+
+  function finishTurn() {
+    if (!board || !game || !players) {
+      return;
+    }
+    const [newGame, newBoard] = nextTurn(board, game, players);
+    setGame(newGame);
+    setBoard(newBoard);
   }
 
   // Initialize game
   useEffect(() => {
     const game = initializeGame(config);
-    setBoardState(game.board);
+    setBoard(game.board);
     setPlayers(game.players);
+    setGame({ selectingStart: true });
     setHighlightedHexes(game.startTiles);
-    setGameState({ selectingStart: true });
   }, []);
 
   return (
@@ -128,49 +132,51 @@ export function Game({ setAppState, config }: GameProps) {
         <Button onClick={() => setAppState("config")}>Return</Button>
         <Heading>Battle Sheep</Heading>
 
-        {gameState && <Players players={players} />}
+        <Players players={players} />
       </Flex>
 
-      <Box position="relative" left="50%">
-        {boardState?.map((horizontalHexes, x) =>
-          horizontalHexes.map((hex, y) => {
-            if (hex === null) {
-              return null;
-            }
-            const highlighted = highlightedHexes
-              ? highlightedHexes.some(
-                  (coord) => coord[0] === x && coord[1] === y,
-                )
-              : false;
-
-            const selected = selectedHex
-              ? selectedHex[0] === x && selectedHex[1] === y
-              : false;
-
-            const { playerIndex, sheep } = fromBoardNumber(
-              boardState[x][y] as number,
-            );
-            return (
-              <Tile
-                key={`${x}${y}`}
-                x={x}
-                y={y}
-                sheep={sheep}
-                color={
-                  playerIndex !== -1 && players !== null
-                    ? players[playerIndex].color
-                    : "white"
+      {board && game && players && (
+        <>
+          <Box position="relative" left="50%">
+            {board?.map((horizontalHexes, x) =>
+              horizontalHexes.map((hex, y) => {
+                // -1 means missing tile in map
+                if (hex === -1) {
+                  return;
                 }
-                highlighted={highlighted}
-                selected={selected}
-                click={() => handleTileClick([x, y], highlighted, selected)}
-              />
-            );
-          }),
-        )}
-      </Box>
+                const highlighted = highlightedHexes
+                  ? highlightedHexes.some(
+                      (coord) => coord[0] === x && coord[1] === y,
+                    )
+                  : false;
 
-      <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
+                const selected = selectedHex
+                  ? selectedHex[0] === x && selectedHex[1] === y
+                  : false;
+
+                const { playerIndex, sheep } = fromBoardNumber(
+                  board[x][y] as number,
+                );
+                return (
+                  <Tile
+                    key={`${x}${y}`}
+                    x={x}
+                    y={y}
+                    sheep={sheep}
+                    color={
+                      playerIndex >= 0 ? players[playerIndex].color : "white"
+                    }
+                    highlighted={highlighted}
+                    selected={selected}
+                    click={() => handleTileClick([x, y], highlighted, selected)}
+                  />
+                );
+              }),
+            )}
+          </Box>
+          <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
+        </>
+      )}
     </Box>
   );
 }

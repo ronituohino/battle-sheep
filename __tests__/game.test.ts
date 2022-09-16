@@ -12,6 +12,9 @@ describe("game", () => {
     expect(toBoardNumber(3, 3)).toEqual(303);
   });
   it("can read player index and sheep amount from board", () => {
-    expect(fromBoardNumber(106)).toEqual({ playerIndex: 1, sheep: 6 });
+    expect(fromBoardNumber(6)).toEqual({ playerIndex: 0, sheep: 6 });
+    expect(fromBoardNumber(112)).toEqual({ playerIndex: 1, sheep: 12 });
+    expect(fromBoardNumber(210)).toEqual({ playerIndex: 2, sheep: 10 });
+    expect(fromBoardNumber(301)).toEqual({ playerIndex: 3, sheep: 1 });
   });
 });
