@@ -2,10 +2,10 @@ import {
   toBoardNumber,
   fromBoardNumber,
   initializeGame,
-  getPossibleMoveTiles,
+  getPossibleMovesFromTile,
   moveSheep,
   setSheep,
-} from "../src/game";
+} from "../src/utils/game";
 import { describe, it, expect } from "vitest";
 import { levels } from "../src/levels";
 
@@ -35,7 +35,7 @@ describe("game.ts", () => {
     expect(fromBoardNumber(301)).toEqual({ playerIndex: 3, sheep: 1 });
   });
   it("can read possible moves from board", () => {
-    let tiles = getPossibleMoveTiles(testBoard, [0, 1]);
+    let tiles = getPossibleMovesFromTile(testBoard, [0, 1]);
     expect(tiles).toContainEqual([2, 1]);
     expect(tiles).toContainEqual([4, 5]);
     expect(tiles).toHaveLength(2);
@@ -46,7 +46,7 @@ describe("game.ts", () => {
     // The coordinate we have selected shouldn't be in the results
     expect(tiles).not.toContainEqual([0, 1]);
 
-    tiles = getPossibleMoveTiles(testBoard, [3, 4]);
+    tiles = getPossibleMovesFromTile(testBoard, [3, 4]);
     expect(tiles).toContainEqual([3, 3]);
     expect(tiles).toContainEqual([0, 1]);
     expect(tiles).toContainEqual([4, 5]);
@@ -54,7 +54,7 @@ describe("game.ts", () => {
     expect(tiles).toContainEqual([3, 6]);
     expect(tiles).toHaveLength(5);
 
-    tiles = getPossibleMoveTiles(testBoard, [6, 0]);
+    tiles = getPossibleMovesFromTile(testBoard, [6, 0]);
     expect(tiles).toContainEqual([6, 5]);
     expect(tiles).toHaveLength(1);
   });
@@ -72,14 +72,14 @@ describe("game.ts", () => {
     expect(newBoard[1][1]).toEqual(206);
   });
   it("can move sheep", () => {
-    const boardWithSheep = setSheep(testBoard, [0, 1], 16, 0);
+    let boardWithSheep = setSheep(testBoard, [0, 1], 16, 0);
 
-    moveSheep(boardWithSheep, [0, 1], [2, 1], 6, 0);
+    boardWithSheep = moveSheep(boardWithSheep, [0, 1], [2, 1], 6, 0);
     expect(boardWithSheep[0][1]).toEqual(10);
     expect(boardWithSheep[2][1]).toEqual(6);
     expect(boardWithSheep).not.toContainEqual(16);
 
-    moveSheep(boardWithSheep, [0, 1], [4, 5], 1, 0);
+    boardWithSheep = moveSheep(boardWithSheep, [0, 1], [4, 5], 1, 0);
     expect(boardWithSheep[0][1]).toEqual(9);
     expect(boardWithSheep[4][5]).toEqual(1);
     expect(boardWithSheep).not.toContainEqual(16);

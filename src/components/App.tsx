@@ -1,8 +1,8 @@
-import type { AppState, ConfigSchema } from "../types";
+import type { AppState, ConfigSchema } from "../utils/types";
 
 import { useFormik } from "formik";
 import { useState } from "react";
-import { assertUnreachable } from "../types";
+import { assertUnreachable } from "../utils/types";
 
 import { Config } from "./Config";
 import { Game } from "./Game";

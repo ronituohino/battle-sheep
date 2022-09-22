@@ -2,7 +2,7 @@
  * @file Most TypeScript types are defined here. Exceptions are React component prop types.
  */
 
-import { levels } from "./levels";
+import { levels } from "../levels";
 
 export type AppState = "config" | "game";
 
@@ -18,6 +18,8 @@ export type ConfigSchema = {
 
 export type GameState = {
   selectingStart: boolean;
+  startTiles: Coordinate[];
+  gameEnded: boolean;
 };
 
 export type Player = {
@@ -26,9 +28,14 @@ export type Player = {
 };
 
 export type Coordinate = number[];
-export type CoordinateArray = Coordinate[];
-
 export type Board = number[][];
+
+export type SheepBoard = number;
+export type SheepReadable = {
+  sheep: number;
+  coord: Coordinate;
+  playerIndex: number;
+};
 
 export type MovePlot = {
   from: Coordinate;
@@ -40,6 +47,12 @@ export type AIMove = {
   from: Coordinate;
   to: Coordinate;
   amount: number;
+};
+export type AIPlot = {
+  from: Coordinate;
+  to: Coordinate;
+  fromValue: number;
+  toValue: number;
 };
 
 // TS exhaustive type check (on switch statements)

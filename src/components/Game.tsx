@@ -3,22 +3,22 @@ import type {
   ConfigSchema,
   GameState,
   Coordinate,
-  CoordinateArray,
   MovePlot,
   Board,
   Player,
-} from "../types";
+} from "../utils/types";
 import { Button, Heading, Flex, Box } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 import {
-  getPossibleMoveTiles,
+  getPossibleMovesFromTile,
   initializeGame,
   moveSheep,
   setSheep,
   fromBoardNumber,
   nextTurn,
-} from "../game";
+  getPossibleMoves,
+} from "../utils/game";
 
 import { Tile } from "../components/Tile";
 import { MoveSheepModal } from "../components/MoveSheepModal";
@@ -38,8 +38,10 @@ export function Game({ setAppState, config }: GameProps) {
   // UI
   // Tile states
   const [selectedHex, setSelectedHex] = useState<Coordinate>();
-  const [highlightedHexes, setHighlightedHexes] = useState<CoordinateArray>();
+  const [highlightedHexes, setHighlightedHexes] = useState<Coordinate[]>();
 
+  // Set this to true to end the player turn
+  const [finished, setFinished] = useState(false);
   // Move sheep modal
   const [move, setMove] = useState<MovePlot>();
   // Called from MoveSheepModal.tsx
@@ -56,7 +58,7 @@ export function Game({ setAppState, config }: GameProps) {
     setHighlightedHexes(undefined);
     setSelectedHex(undefined);
 
-    finishTurn();
+    setFinished(true);
   }
 
   // Tile click handler
@@ -75,7 +77,7 @@ export function Game({ setAppState, config }: GameProps) {
         setBoard(setSheep(board, coords, 16, 0));
 
         setHighlightedHexes(undefined);
-        finishTurn();
+        setFinished(true);
       } else if (selectedHex) {
         // Check if there are sheep to move
         const value = board[selectedHex[0]][selectedHex[1]];
@@ -98,7 +100,7 @@ export function Game({ setAppState, config }: GameProps) {
 
     // Check if the tile has more than 1 sheep on it
     if (boardValue > 1) {
-      const moves = getPossibleMoveTiles(board, coords);
+      const moves = getPossibleMovesFromTile(board, coords);
       setHighlightedHexes(moves);
       setSelectedHex(coords);
     } else {
@@ -108,21 +110,46 @@ export function Game({ setAppState, config }: GameProps) {
     }
   }
 
-  function finishTurn() {
-    if (!board || !game || !players) {
-      return;
+  useEffect(() => {
+    function finish(board: Board, game: GameState, players: Player[]) {
+      const [newGame, newBoard, moved] = nextTurn(board, game, players);
+
+      // If player can't make any move
+      if (getPossibleMoves(newBoard, 0).length === 0) {
+        // And AI moved last turn
+        if (moved.some((v) => v)) {
+          // Simulate more AI
+          finish(newBoard, newGame, players);
+          console.log("finishing ai");
+        } else {
+          // End game
+          console.log("game end");
+          setGame({ ...newGame, gameEnded: true });
+          setBoard(newBoard);
+        }
+      } else {
+        console.log("regular turn to player");
+        setGame(newGame);
+        setBoard(newBoard);
+      }
     }
-    const [newGame, newBoard] = nextTurn(board, game, players);
-    setGame(newGame);
-    setBoard(newBoard);
-  }
+
+    if (finished && board && game && players) {
+      finish(board, game, players);
+      setFinished(false);
+    }
+  }, [finished]);
 
   // Initialize game
   useEffect(() => {
     const game = initializeGame(config);
     setBoard(game.board);
     setPlayers(game.players);
-    setGame({ selectingStart: true });
+    setGame({
+      selectingStart: true,
+      startTiles: game.startTiles,
+      gameEnded: false,
+    });
     setHighlightedHexes(game.startTiles);
   }, []);
 

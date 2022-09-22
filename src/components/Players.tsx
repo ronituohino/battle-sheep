@@ -1,4 +1,4 @@
-import type { Player } from "../types";
+import type { Player } from "../utils/types";
 import { OrderedList, ListItem } from "@chakra-ui/react";
 
 export type PlayersProps = {

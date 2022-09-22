@@ -1,5 +1,5 @@
 import type { FormikProps } from "formik";
-import type { ConfigSchema } from "../types";
+import type { ConfigSchema } from "../utils/types";
 
 import {
   Checkbox,

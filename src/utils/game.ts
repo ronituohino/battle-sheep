@@ -6,13 +6,17 @@ import type {
   ConfigSchema,
   Player,
   Coordinate,
-  CoordinateArray,
   Board,
   Level,
   GameState,
+  SheepReadable,
+  SheepBoard,
+  MovePlot,
 } from "./types";
-import { levels } from "./levels";
+import { levels } from "../levels";
 import { aiTurn } from "./ai";
+
+import { copy } from "./copy";
 
 export const playerColors = ["#f15bb5", "#fee440", "#00bbf9", "#9b5de5"];
 
@@ -67,12 +71,14 @@ export const movement = {
   northWest: [-1, -1],
 };
 
-// Get tiles to which player can move, given a board and a selected tile
-export function getPossibleMoveTiles(
+/**
+ *  Get tiles to which player can move, given a board and a selected tile
+ * */
+export function getPossibleMovesFromTile(
   board: Board,
   selectedTile: Coordinate,
-): CoordinateArray | undefined {
-  let boundaries: CoordinateArray | undefined = undefined;
+): Coordinate[] | undefined {
+  let boundaries: Coordinate[] | undefined = undefined;
 
   // Select movement direction
   Object.values(movement).forEach((move) => {
@@ -115,6 +121,63 @@ export function getPossibleMoveTiles(
 }
 
 /**
+ * @param board Game board
+ * @param playerIndex Player whose sheep are searched
+ * @returns Array of sheep objects
+ */
+export function getSheepFromPlayer(
+  board: Board,
+  playerIndex: number,
+): SheepReadable[] {
+  const sheepArr = [];
+  for (let x = 0; x < board.length; x++) {
+    const column = board[x];
+    for (let y = 0; y < column.length; y++) {
+      const tile = column[y];
+      if (tile > 0) {
+        const tileInfo = fromBoardNumber(tile);
+        if (tileInfo.playerIndex === playerIndex && tileInfo.sheep > 1) {
+          sheepArr.push({ ...tileInfo, coord: [x, y] });
+        }
+      }
+    }
+  }
+  return sheepArr;
+}
+
+/**
+ * @param board Game board
+ * @param playerIndex Player
+ *
+ * @returns Array of all possible moves for given player
+ */
+export function getPossibleMoves(board: Board, playerIndex: number) {
+  const moves: MovePlot[] = [];
+  const sheepArr = getSheepFromPlayer(board, playerIndex);
+  for (let s = 0; s < sheepArr.length; s++) {
+    const tile = sheepArr[s];
+    // Only handle sheep tiles with a movable amount of sheep
+    if (tile.sheep <= 1) {
+      continue;
+    }
+
+    const possibleMoves = getPossibleMovesFromTile(board, tile.coord);
+    if (possibleMoves === undefined) {
+      continue;
+    }
+
+    for (let m = 0; m < possibleMoves.length; m++) {
+      moves.push({
+        from: tile.coord,
+        to: possibleMoves[m],
+        maxSheep: tile.sheep,
+      });
+    }
+  }
+  return moves;
+}
+
+/**
  * Moves sheep from one tile to another and returns new board
  *
  * @param board Game board
@@ -131,12 +194,13 @@ export function moveSheep(
   amount: number,
   playerIndex: number,
 ): Board {
-  const { sheep } = fromBoardNumber(board[from[0]][from[1]]);
+  const newBoard = copy(board);
+  const { sheep } = fromBoardNumber(newBoard[from[0]][from[1]]);
 
-  board[from[0]][from[1]] = toBoardNumber(sheep - amount, playerIndex);
-  board[to[0]][to[1]] = toBoardNumber(amount, playerIndex);
+  newBoard[from[0]][from[1]] = toBoardNumber(sheep - amount, playerIndex);
+  newBoard[to[0]][to[1]] = toBoardNumber(amount, playerIndex);
 
-  return board;
+  return newBoard;
 }
 
 /**
@@ -154,8 +218,9 @@ export function setSheep(
   amount: number,
   playerIndex: number,
 ): Board {
-  board[coord[0]][coord[1]] = toBoardNumber(amount, playerIndex);
-  return board;
+  const newBoard = copy(board);
+  newBoard[coord[0]][coord[1]] = toBoardNumber(amount, playerIndex);
+  return newBoard;
 }
 
 /**
@@ -167,7 +232,7 @@ export function setSheep(
  * @param playerIndex The player index
  * @returns A new board value with the above info combined
  */
-export function toBoardNumber(amount: number, playerIndex: number) {
+export function toBoardNumber(amount: number, playerIndex: number): SheepBoard {
   return playerIndex * 100 + amount;
 }
 
@@ -201,10 +266,22 @@ export function nextTurn(
   board: Board,
   game: GameState,
   players: Player[],
-): [GameState, Board] {
+): [GameState, Board, boolean[]] {
+  let prevBoard = copy(board);
+  let newBoard = prevBoard;
+  const moved = [];
+
   for (let i = 1; i < players.length; i++) {
     // Use AI
-    // board = aiTurn(game, board, players, i);
+    newBoard = aiTurn(game, prevBoard, i);
+
+    if (newBoard === prevBoard) {
+      moved.push(false);
+    } else {
+      moved.push(true);
+    }
+
+    prevBoard = newBoard;
   }
 
   // Turn off selectingStart mode
@@ -212,5 +289,5 @@ export function nextTurn(
     game.selectingStart = false;
   }
 
-  return [game, board];
+  return [game, newBoard, moved];
 }
