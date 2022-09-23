@@ -7,18 +7,83 @@ University of Helsinki.
 This project is (or was at some point) live at
 https://battle-sheep-game.web.app/
 
-## Documentation
+### Documentation
 
 [Design document](./docs/design.md) (Määrittelydokumentti)  
 [Manual](./docs/manual.md) (Käyttöohje)  
 [Performance report](./docs/performance.md) (Toteutusdokumentti)  
 [Testing report](./docs/testing.md) (Testausdokumentti)
 
-## Weekly reports
+### Weekly reports
 
 [Week 1](./docs/week1_report.md)  
-[Week 2](./docs/week2_report.md)
+[Week 2](./docs/week2_report.md)  
+[Week 3](./docs/week3_report.md)
 
-## Test coverage
+### Test coverage
 
 https://battle-sheep-coverage.web.app/
+
+## Setting up
+
+Install Node:
+
+#### Linux
+
+Install nvm:
+
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+```
+
+Close the terminal and start it up again.
+Install Node:
+
+```
+nvm install --lts
+```
+
+#### Windows
+
+Navigate to the [installer website](https://nodejs.org/en/) and run Node LTS installer.
+
+### Project dependencies
+
+In the project root, run:
+
+```
+npm install
+```
+
+## Commands
+
+All commands are listed in [package.json](./package.json) under scripts and they are executable with:
+
+```
+npm run <script>
+```
+
+Here are some important ones:  
+Start up local development environment:
+
+```
+npm run dev
+```
+
+Run ESLint:
+
+```
+npm run lint
+```
+
+Run unit tests:
+
+```
+npm run test
+```
+
+Generate unit test coverage report:
+
+```
+npm run coverage
+```
