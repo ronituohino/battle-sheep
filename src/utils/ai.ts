@@ -11,7 +11,7 @@ import {
 } from "./game";
 import { getRandomInt } from "./random";
 import { copy } from "./copy";
-import { AIMove, Board, Coordinate, GameState, Player } from "./types";
+import { Board, Coordinate, GameState, Player } from "./types";
 
 /**
  * Plays the AI turns. Called after the human player's turn ends.
@@ -32,7 +32,7 @@ export function playAi(
 
   for (let i = 1; i < players.length; i++) {
     // Use AI
-    newBoard = simulate(prevBoard, game, i);
+    newBoard = simulate(prevBoard, game, i, players.length);
 
     // simulate returns the same board object reference if it couldn't move
     if (newBoard === prevBoard) {
@@ -63,16 +63,17 @@ export function simulate(
   board: Board,
   game: GameState,
   playerIndex: number,
+  playerAmount: number,
 ): Board {
   if (game.selectingStart) {
     return setSheep(board, AI_selectStart(game.startTiles), 16, playerIndex);
   }
 
-  const move = AI_moveSheep(board, playerIndex);
-  if (!move) {
-    return board;
-  }
-  return moveSheep(board, move.from, move.to, move.amount, playerIndex);
+  const result = minimax(board, 2, playerIndex, playerIndex, playerAmount);
+
+  console.log(result[0]);
+
+  return result[1];
 }
 
 /**
@@ -95,10 +96,13 @@ function AI_selectStart(startTiles: Coordinate[]): Coordinate {
  * @param players Players
  * @returns An AIMove object, which contains the Coordinates from and to, and sheep amount.
  */
-export function AI_moveSheep(
+export function minimax(
   board: Board,
+  depth: number,
   playerIndex: number,
-): AIMove | undefined {
+  handledPlayerIndex: number,
+  playerAmount: number,
+): [number, Board] {
   /**
    * Valuable moves:
    *  The idea is to first find the AI's sheep
@@ -118,31 +122,70 @@ export function AI_moveSheep(
    */
 
   // Find all possible moves, and evaluate the amount of sheep to move
-  const possibleMoves = getPossibleMoves(board, playerIndex);
+  const possibleMoves = getPossibleMoves(board, handledPlayerIndex);
 
-  const movesWithAdvantage: [number, AIMove][] = [];
+  const advantageWithNewBoard: [number, Board][] = [];
+
+  // No possible moves
   if (possibleMoves.length === 0) {
-    return;
-  }
-  for (let m = 0; m < possibleMoves.length; m++) {
-    const move = possibleMoves[m];
-
-    for (let s = 1; s < move.maxSheep; s++) {
-      const advantage = evaluate(
-        moveSheep(board, move.from, move.to, s, playerIndex),
-      )[playerIndex];
-      movesWithAdvantage.push([
-        advantage,
-        { from: move.from, to: move.to, amount: s },
-      ]);
+    if (handledPlayerIndex === playerIndex) {
+      // If this is the handled AI, bad move (drove itself out of moves)
+      return [-100, board];
+    } else {
+      // If this is another player, really good (no moves for the other player)
+      return [100, board];
     }
   }
 
-  const sorted = movesWithAdvantage.sort((a, b) => b[0] - a[0]);
+  // Iterate over all possible moves
+  for (let m = 0; m < possibleMoves.length; m++) {
+    const move = possibleMoves[m];
 
+    // With all possible sheep amounts...
+    for (let s = 1; s < move.maxSheep; s++) {
+      const newBoard = moveSheep(
+        board,
+        move.from,
+        move.to,
+        s,
+        handledPlayerIndex,
+      );
+      // Always evaluate situation for playerIndex
+      let advantage = evaluate(newBoard)[playerIndex];
+
+      if (depth > 0) {
+        // Results from DFS
+        const result = minimax(
+          newBoard,
+          depth - 1,
+          playerIndex,
+          handledPlayerIndex + 1 >= playerAmount ? 0 : handledPlayerIndex + 1,
+          playerAmount,
+        );
+
+        if (result[0] > advantage) {
+          advantage = result[0];
+        }
+      }
+
+      advantageWithNewBoard.push([advantage, newBoard]);
+    }
+  }
+
+  // If finding move for player, sort by best, if for opponents, sort by worst
+  let sorted = [];
+  if (handledPlayerIndex === playerIndex) {
+    // Best move
+    sorted = advantageWithNewBoard.sort((a, b) => b[0] - a[0]);
+  } else {
+    // Worst move
+    sorted = advantageWithNewBoard.sort((a, b) => a[0] - b[0]);
+  }
+
+  console.log(depth);
   console.log(sorted);
 
-  return sorted[0][1];
+  return sorted[0];
 }
 
 /**
@@ -152,6 +195,7 @@ export function AI_moveSheep(
  *  Take the sum of free space in all directions from tile +1.
  *  Take the sheep amount, see if there are excess sheep compared to free space:
  *    any excess sheep negate advantage * 3
+ *
  *
  * @param board Game board
  * @returns An array of advantage/value for each player
@@ -166,6 +210,11 @@ export function evaluate(board: Board): number[] {
       // Tile itself has a value of 1
       let value = 1;
       const tileInfo = fromBoardNumber(column[y]);
+
+      // An empty tile
+      if (tileInfo.playerIndex === -1) {
+        continue;
+      }
 
       // Free space in all directions of tile
       const moves = getPossibleMovesFromTile(board, [x, y]);
@@ -187,6 +236,8 @@ export function evaluate(board: Board): number[] {
       // Excess sheep reduction
       if (tileInfo.sheep > value) {
         value -= tileInfo.sheep * 3;
+      } else {
+        value += tileInfo.sheep;
       }
 
       advantage[tileInfo.playerIndex] = value;

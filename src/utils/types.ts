@@ -42,15 +42,3 @@ export type MovePlot = {
   to: Coordinate;
   maxSheep: number;
 };
-
-export type AIMove = {
-  from: Coordinate;
-  to: Coordinate;
-  amount: number;
-};
-export type AIPlot = {
-  from: Coordinate;
-  to: Coordinate;
-  fromValue: number;
-  toValue: number;
-};
