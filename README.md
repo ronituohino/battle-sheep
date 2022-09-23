@@ -49,7 +49,7 @@ Navigate to the [installer website](https://nodejs.org/en/) and run Node LTS ins
 
 ### Project dependencies
 
-In the project root, run:
+To install the project dependencies, run in the project root:
 
 ```
 npm install
