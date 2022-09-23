@@ -16,9 +16,9 @@ import {
   moveSheep,
   setSheep,
   fromBoardNumber,
-  nextTurn,
   getPossibleMoves,
 } from "../utils/game";
+import { playAi } from "../utils/ai";
 
 import { Tile } from "../components/Tile";
 import { MoveSheepModal } from "../components/MoveSheepModal";
@@ -112,7 +112,7 @@ export function Game({ setAppState, config }: GameProps) {
 
   useEffect(() => {
     function finish(board: Board, game: GameState, players: Player[]) {
-      const [newGame, newBoard, moved] = nextTurn(board, game, players);
+      const [newGame, newBoard, moved] = playAi(board, game, players);
 
       // If player can't make any move
       if (getPossibleMoves(newBoard, 0).length === 0) {

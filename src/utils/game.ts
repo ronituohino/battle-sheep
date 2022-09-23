@@ -8,13 +8,11 @@ import type {
   Coordinate,
   Board,
   Level,
-  GameState,
   SheepReadable,
   SheepBoard,
   MovePlot,
 } from "./types";
 import { levels } from "../levels";
-import { aiTurn } from "./ai";
 
 import { copy } from "./copy";
 
@@ -252,42 +250,4 @@ export function fromBoardNumber(value: number) {
     playerIndex,
     sheep,
   };
-}
-
-/**
- * Plays the AI turns. Called after the human player's turn ends.
- *
- * @param board Game board
- * @param game Game state
- * @param players Players
- * @returns this kind of array: [newGameState, newBoardState]
- */
-export function nextTurn(
-  board: Board,
-  game: GameState,
-  players: Player[],
-): [GameState, Board, boolean[]] {
-  let prevBoard = copy(board);
-  let newBoard = prevBoard;
-  const moved = [];
-
-  for (let i = 1; i < players.length; i++) {
-    // Use AI
-    newBoard = aiTurn(game, prevBoard, i);
-
-    if (newBoard === prevBoard) {
-      moved.push(false);
-    } else {
-      moved.push(true);
-    }
-
-    prevBoard = newBoard;
-  }
-
-  // Turn off selectingStart mode
-  if (game.selectingStart) {
-    game.selectingStart = false;
-  }
-
-  return [game, newBoard, moved];
 }

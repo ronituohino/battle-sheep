@@ -2,7 +2,6 @@ import type { AppState, ConfigSchema } from "../utils/types";
 
 import { useFormik } from "formik";
 import { useState } from "react";
-import { assertUnreachable } from "../utils/types";
 
 import { Config } from "./Config";
 import { Game } from "./Game";
@@ -23,16 +22,10 @@ export function App() {
     },
   });
 
-  const switchRender = () => {
-    switch (appState) {
-      case "config":
-        return <Config formik={formik} />;
-      case "game":
-        return <Game setAppState={setAppState} config={formik.values} />;
-      default:
-        assertUnreachable(appState);
-    }
-  };
+  const appStates = {
+    config: <Config formik={formik} />,
+    game: <Game setAppState={setAppState} config={formik.values} />,
+  } as const;
 
-  return <Box m="8">{switchRender()}</Box>;
+  return <Box m="8">{appStates[appState]}</Box>;
 }

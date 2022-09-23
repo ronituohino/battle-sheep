@@ -54,8 +54,3 @@ export type AIPlot = {
   fromValue: number;
   toValue: number;
 };
-
-// TS exhaustive type check (on switch statements)
-export function assertUnreachable(x: never): never {
-  throw new Error(`Oops, this should never be called! ${x}`);
-}

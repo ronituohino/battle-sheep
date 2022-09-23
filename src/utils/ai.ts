@@ -3,13 +3,54 @@
  */
 
 import {
+  fromBoardNumber,
   getPossibleMoves,
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
 } from "./game";
 import { getRandomInt } from "./random";
-import { AIMove, Board, Coordinate, GameState } from "./types";
+import { copy } from "./copy";
+import { AIMove, Board, Coordinate, GameState, Player } from "./types";
+
+/**
+ * Plays the AI turns. Called after the human player's turn ends.
+ *
+ * @param board Game board
+ * @param game Game state
+ * @param players Players
+ * @returns this kind of array: [newGameState, newBoardState, moved]
+ */
+export function playAi(
+  board: Board,
+  game: GameState,
+  players: Player[],
+): [GameState, Board, boolean[]] {
+  let prevBoard = copy(board);
+  let newBoard = prevBoard;
+  const moved = [];
+
+  for (let i = 1; i < players.length; i++) {
+    // Use AI
+    newBoard = simulate(prevBoard, game, i);
+
+    // simulate returns the same board object reference if it couldn't move
+    if (newBoard === prevBoard) {
+      moved.push(false);
+    } else {
+      moved.push(true);
+    }
+
+    prevBoard = newBoard;
+  }
+
+  // Turn off selectingStart mode
+  if (game.selectingStart) {
+    game.selectingStart = false;
+  }
+
+  return [game, newBoard, moved];
+}
 
 /**
  * Simulates a turn for the AI. Returns the new state of the game.
@@ -18,9 +59,9 @@ import { AIMove, Board, Coordinate, GameState } from "./types";
  * @param board  Game board
  * @returns a tuple: [newGameState, newBoardState]
  */
-export function aiTurn(
-  game: GameState,
+export function simulate(
   board: Board,
+  game: GameState,
   playerIndex: number,
 ): Board {
   if (game.selectingStart) {
@@ -62,8 +103,8 @@ export function AI_moveSheep(
    * Valuable moves:
    *  The idea is to first find the AI's sheep
    *  Then list their possible moves (sheep from, sheep to, amount)
-   *  Then implement some heuristic to value each move
-   *  Then take X most valuable moves
+   *  Then implement some heuristic to value the new board state after that move
+   *  Then take X most valuable boards
    *
    * Minimax:
    *  Before making the move, take the AI's X most valuable moves, and start building a tree.
@@ -79,46 +120,78 @@ export function AI_moveSheep(
   // Find all possible moves, and evaluate the amount of sheep to move
   const possibleMoves = getPossibleMoves(board, playerIndex);
 
+  const movesWithAdvantage: [number, AIMove][] = [];
   if (possibleMoves.length === 0) {
     return;
   }
+  for (let m = 0; m < possibleMoves.length; m++) {
+    const move = possibleMoves[m];
 
-  const move = possibleMoves[getRandomInt(possibleMoves.length)];
-  return {
-    from: move.from,
-    to: move.to,
-    amount: getRandomInt(move.maxSheep - 1) + 1,
-  };
+    for (let s = 1; s < move.maxSheep; s++) {
+      const advantage = evaluate(
+        moveSheep(board, move.from, move.to, s, playerIndex),
+      )[playerIndex];
+      movesWithAdvantage.push([
+        advantage,
+        { from: move.from, to: move.to, amount: s },
+      ]);
+    }
+  }
+
+  const sorted = movesWithAdvantage.sort((a, b) => b[0] - a[0]);
+
+  console.log(sorted);
+
+  return sorted[0][1];
 }
 
 /**
- * Main heuristic for the AI.
+ * Main heuristic for the AI. Evaluates the game board for each player.
+ *
+ * Advantage formula per sheep tile:
+ *  Take the sum of free space in all directions from tile +1.
+ *  Take the sheep amount, see if there are excess sheep compared to free space:
+ *    any excess sheep negate advantage * 3
  *
  * @param board Game board
- * @returns Value that represents how valuable tile at coord is.
- *
- * Right now returns the amount of free tiles connected in a straight line in any direction.
- *
- * Values calculated from this could be put into a LUT for the current player.
+ * @returns An array of advantage/value for each player
  */
-export function tileValue(board: Board, coord: Coordinate): number {
-  const moves = getPossibleMovesFromTile(board, coord);
-  if (!moves) {
-    return 0;
-  }
+export function evaluate(board: Board): number[] {
+  const advantage: number[] = [];
 
-  let total = 0;
-  for (let i = 0; i < moves.length; i++) {
-    const targetCoord = moves[i];
-    const [diffX, diffY] = [
-      Math.abs(coord[0] - targetCoord[0]),
-      Math.abs(coord[1] - targetCoord[1]),
-    ];
-    if (diffX > 0) {
-      total += diffX;
-    } else {
-      total += diffY;
+  // Iterate over all tiles
+  for (let x = 0; x < board.length; x++) {
+    const column = board[x];
+    for (let y = 0; y < column.length; y++) {
+      // Tile itself has a value of 1
+      let value = 1;
+      const tileInfo = fromBoardNumber(column[y]);
+
+      // Free space in all directions of tile
+      const moves = getPossibleMovesFromTile(board, [x, y]);
+      if (moves) {
+        for (let i = 0; i < moves.length; i++) {
+          const targetCoord = moves[i];
+          const [diffX, diffY] = [
+            Math.abs(x - targetCoord[0]),
+            Math.abs(y - targetCoord[1]),
+          ];
+          if (diffX > 0) {
+            value += diffX;
+          } else {
+            value += diffY;
+          }
+        }
+      }
+
+      // Excess sheep reduction
+      if (tileInfo.sheep > value) {
+        value -= tileInfo.sheep * 3;
+      }
+
+      advantage[tileInfo.playerIndex] = value;
     }
   }
-  return total;
+
+  return advantage;
 }
