@@ -20,6 +20,7 @@ export type GameState = {
   selectingStart: boolean;
   startTiles: Coordinate[];
   gameEnded: boolean;
+  winner?: Player;
 };
 
 export type Player = {

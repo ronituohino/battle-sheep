@@ -78,7 +78,7 @@ export const movement = {
 };
 
 /**
- *  Get tiles to which player can move, given a board and a selected tile
+ * Get tiles to which sheep can move from a tile
  * */
 export function getPossibleMovesFromTile(
   board: Board,
@@ -127,6 +127,8 @@ export function getPossibleMovesFromTile(
 }
 
 /**
+ * Get all sheep from a player
+ *
  * @param board Game board
  * @param playerIndex Player whose sheep are searched
  * @returns Array of sheep objects
@@ -227,6 +229,30 @@ export function setSheep(
   const newBoard = copy(board);
   newBoard[coord[0]][coord[1]] = toBoardNumber(amount, playerIndex);
   return newBoard;
+}
+
+/**
+ * Returns an array of the amount of tiles players have in control
+ *
+ * @param board Game board
+ */
+export function getPlayersSheepTileAmount(
+  board: Board,
+  playerAmount: number,
+): number[] {
+  const sheepAmount: number[] = Array(playerAmount).fill(0);
+
+  for (let x = 0; x < board.length; x++) {
+    const column = board[x];
+    for (let y = 0; y < column.length; y++) {
+      const tile = fromBoardNumber(column[y]);
+      if (tile.playerIndex >= 0 && tile.sheep > 0) {
+        sheepAmount[tile.playerIndex] += 1;
+      }
+    }
+  }
+
+  return sheepAmount;
 }
 
 /**

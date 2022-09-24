@@ -17,12 +17,14 @@ import {
   setSheep,
   fromBoardNumber,
   getPossibleMoves,
+  getPlayersSheepTileAmount,
 } from "../utils/game";
 import { playAi } from "../utils/ai";
 
 import { Tile } from "../components/Tile";
 import { MoveSheepModal } from "../components/MoveSheepModal";
 import { Players } from "../components/Players";
+import { EndGame } from "./EndGame";
 
 export type GameProps = {
   setAppState: (state: AppState) => void;
@@ -120,15 +122,41 @@ export function Game({ setAppState, config }: GameProps) {
         if (moved.some((v) => v)) {
           // Simulate more AI
           finish(newBoard, newGame, players);
-          console.log("finishing ai");
         } else {
           // End game
-          console.log("game end");
-          setGame({ ...newGame, gameEnded: true });
+          const sheepAmounts = getPlayersSheepTileAmount(
+            newBoard,
+            players.length,
+          );
+
+          // Find biggest value, and keep log of sheep amounts
+          const values: { [index: number]: number } = {};
+          let biggest = 0;
+          for (let l = 0; l < sheepAmounts.length; l++) {
+            const sheepAmount = sheepAmounts[l];
+            if (sheepAmount > biggest) {
+              biggest = sheepAmount;
+            }
+
+            if (sheepAmount in values) {
+              values[sheepAmount] += 1;
+            } else {
+              values[sheepAmount] = 1;
+            }
+          }
+
+          // If threre are two occurrences of the biggest value, game is a tie, otherwise a single winner
+          setGame({
+            ...newGame,
+            gameEnded: true,
+            winner:
+              values[biggest] > 1
+                ? undefined
+                : players[sheepAmounts.indexOf(biggest)],
+          });
           setBoard(newBoard);
         }
       } else {
-        console.log("regular turn to player");
         setGame(newGame);
         setBoard(newBoard);
       }
@@ -202,6 +230,11 @@ export function Game({ setAppState, config }: GameProps) {
             )}
           </Box>
           <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
+          <EndGame
+            gameEnded={game.gameEnded}
+            winner={game.winner}
+            setAppState={setAppState}
+          />
         </>
       )}
     </Box>

@@ -12,7 +12,6 @@ const human: Player = { name: "human", color: "blue", human: true };
 describe("ai", () => {
   it("can select starting tile", () => {
     // Test if playAi returns a new game state which has 16 sheep somewhere
-
     const newState = playAi(
       testBoard,
       {
@@ -24,6 +23,7 @@ describe("ai", () => {
     );
     expect(newState[1].flat()).toContainEqual(16);
   });
+
   it("can move sheep", () => {
     const newState = playAi(
       testBoard,
@@ -48,6 +48,7 @@ describe("ai", () => {
 
     expect(firstMovedState[1].flat()).not.toContainEqual(16);
   });
+
   it("doesn't do anything if there are no ai players", () => {
     const newState = playAi(
       testBoard,
@@ -63,6 +64,7 @@ describe("ai", () => {
     expect(newState[1]).toEqual(testBoard);
     expect(newState[1]).toBe(testBoard);
   });
+
   it("doesn't do anything if there are no possible moves", () => {
     // Fill board with 1 sheep for player 0
     let newBoard = testBoard;
