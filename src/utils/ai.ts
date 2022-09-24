@@ -231,10 +231,11 @@ export function evaluate(board: Board): number[] {
         }
       }
 
-      // Excess sheep reduction
+      // Excess sheep reduction, harsh reduction
       if (tileInfo.sheep > value) {
         value -= tileInfo.sheep * 3;
       } else {
+        // If sheep are within bounds, add value
         value += tileInfo.sheep;
       }
 
