@@ -31,12 +31,20 @@ export function initializeGame(config: ConfigSchema) {
   const players: Player[] = [];
   let playerAmount = 0;
   if (!config.watchMode) {
-    players.push({ name: "You", color: playerColors[playerAmount] });
+    players.push({
+      name: "You",
+      color: playerColors[playerAmount],
+      human: true,
+    });
     playerAmount++;
   }
 
   for (let i = 0; i < config.aiPlayers; i++) {
-    players.push({ name: `AI ${i}`, color: playerColors[playerAmount] });
+    players.push({
+      name: `AI ${i}`,
+      color: playerColors[playerAmount],
+      human: false,
+    });
     playerAmount++;
   }
 

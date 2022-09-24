@@ -3,6 +3,7 @@ import {
   fromBoardNumber,
   initializeGame,
   getPossibleMovesFromTile,
+  getPossibleMoves,
   moveSheep,
   setSheep,
 } from "../src/utils/game";
@@ -11,7 +12,7 @@ import { levels } from "../src/levels";
 
 const testBoard = levels.test.board;
 
-describe("game.ts", () => {
+describe("game util", () => {
   it("can initialize the game", () => {
     const init = initializeGame({
       aiPlayers: 1,
@@ -58,6 +59,18 @@ describe("game.ts", () => {
     expect(tiles).toContainEqual([6, 5]);
     expect(tiles).toHaveLength(1);
   });
+  it("can read all possible moves for a player", () => {
+    let newBoard = setSheep(testBoard, [0, 1], 16, 0);
+    newBoard = setSheep(newBoard, [4, 3], 16, 1);
+
+    const allMoves = getPossibleMoves(newBoard, 0);
+
+    expect(allMoves).toHaveLength(2);
+    expect(allMoves).toEqual([
+      { from: [0, 1], to: [2, 1], maxSheep: 16 },
+      { from: [0, 1], to: [4, 5], maxSheep: 16 },
+    ]);
+  });
   it("can set sheep", () => {
     let newBoard = setSheep(testBoard, [0, 1], 16, 0);
     expect(newBoard[0][1]).toEqual(16);
@@ -83,5 +96,14 @@ describe("game.ts", () => {
     expect(boardWithSheep[0][1]).toEqual(9);
     expect(boardWithSheep[4][5]).toEqual(1);
     expect(boardWithSheep).not.toContainEqual(16);
+  });
+  it("can set sheep, returns different reference", () => {
+    const newBoard = setSheep(testBoard, [0, 1], 1, 0);
+    expect(newBoard).not.toBe(testBoard);
+  });
+  it("can move sheep, returns different reference", () => {
+    const newBoard = setSheep(testBoard, [0, 1], 3, 0);
+    const movedBoard = moveSheep(newBoard, [0, 1], [0, 2], 1, 0);
+    expect(movedBoard).not.toBe(newBoard);
   });
 });

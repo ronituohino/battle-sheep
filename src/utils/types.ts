@@ -25,6 +25,7 @@ export type GameState = {
 export type Player = {
   name: string;
   color: string;
+  human: boolean;
 };
 
 export type Coordinate = number[];

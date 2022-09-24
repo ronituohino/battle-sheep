@@ -10,7 +10,6 @@ import {
   setSheep,
 } from "./game";
 import { getRandomInt } from "./random";
-import { copy } from "./copy";
 import { Board, Coordinate, GameState, Player } from "./types";
 
 /**
@@ -26,11 +25,16 @@ export function playAi(
   game: GameState,
   players: Player[],
 ): [GameState, Board, boolean[]] {
-  let prevBoard = copy(board);
+  let prevBoard = board;
   let newBoard = prevBoard;
   const moved = [];
 
-  for (let i = 1; i < players.length; i++) {
+  for (let i = 0; i < players.length; i++) {
+    const player = players[i];
+    if (player.human) {
+      continue;
+    }
+
     // Use AI
     newBoard = simulate(prevBoard, game, i, players.length);
 
@@ -70,9 +74,6 @@ export function simulate(
   }
 
   const result = minimax(board, 2, playerIndex, playerIndex, playerAmount);
-
-  console.log(result[0]);
-
   return result[1];
 }
 
@@ -181,9 +182,6 @@ export function minimax(
     // Worst move
     sorted = advantageWithNewBoard.sort((a, b) => a[0] - b[0]);
   }
-
-  console.log(depth);
-  console.log(sorted);
 
   return sorted[0];
 }
