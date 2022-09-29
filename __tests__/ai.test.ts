@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { playAi } from "../src/utils/ai";
 import { levels } from "../src/levels";
 import { Player } from "../src/utils/types";
-import { setSheep } from "../src/utils/game";
+import { fillBoard, simulateTurns } from "./helper";
 
 const testBoard = levels.test.board;
 
@@ -25,7 +25,7 @@ describe("ai", () => {
   });
 
   it("can move sheep", () => {
-    const newState = playAi(
+    const result = simulateTurns(
       testBoard,
       {
         selectingStart: true,
@@ -33,20 +33,10 @@ describe("ai", () => {
         gameEnded: false,
       },
       [ai],
-    );
-    expect(newState[1].flat()).toContainEqual(16);
-
-    const firstMovedState = playAi(
-      newState[1],
-      {
-        selectingStart: false,
-        startTiles: levels.test.startTiles,
-        gameEnded: false,
-      },
-      [ai],
+      2,
     );
 
-    expect(firstMovedState[1].flat()).not.toContainEqual(16);
+    expect(result[1].flat()).not.toContainEqual(16);
   });
 
   it("doesn't do anything if there are no ai players", () => {
@@ -66,14 +56,7 @@ describe("ai", () => {
   });
 
   it("doesn't do anything if there are no possible moves", () => {
-    // Fill board with 1 sheep for player 0
-    let newBoard = testBoard;
-    for (let x = 0; x < testBoard.length; x++) {
-      const column = testBoard[x];
-      for (let y = 0; y < column.length; y++) {
-        newBoard = setSheep(testBoard, [x, y], 1, 0);
-      }
-    }
+    const newBoard = fillBoard(testBoard, 0, 1);
 
     // Give ai the turn, should return the same board with the same reference
     const newState = playAi(
@@ -88,5 +71,24 @@ describe("ai", () => {
 
     expect(newState[1]).toEqual(newBoard);
     expect(newState[1]).toBe(newBoard);
+  });
+
+  it("can play the game for a few rounds", () => {
+    const newState = simulateTurns(
+      testBoard,
+      {
+        selectingStart: true,
+        startTiles: levels.test.startTiles,
+        gameEnded: false,
+      },
+      [ai, ai],
+      2,
+    );
+    expect(newState[0]).toEqual({
+      selectingStart: false,
+      startTiles: levels.test.startTiles,
+      gameEnded: false,
+    });
+    expect(newState[1].flat()).not.toContainEqual(16);
   });
 });
