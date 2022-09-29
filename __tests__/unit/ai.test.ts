@@ -82,7 +82,7 @@ describe("ai", () => {
         gameEnded: false,
       },
       [ai, ai],
-      2,
+      3,
     );
     expect(newState[0]).toEqual({
       selectingStart: false,

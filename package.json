@@ -11,7 +11,7 @@
     "test-ui": "vitest --ui --dir __tests__/unit/",
     "test": "vitest --run --dir __tests__/unit/",
     "performance": "vitest --run --dir __tests__/performance/",
-    "coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage --dir __tests__/unit/",
     "login": "firebase login",
     "deploy": "firebase deploy",
     "publish": "npm-run-all --parallel lint test --parallel build coverage --sequential login deploy"
