@@ -32,6 +32,8 @@ export type Player = {
 export type Coordinate = number[];
 export type Board = number[][];
 
+export type BoardValuePair = [number, Board];
+
 export type SheepBoard = number;
 export type SheepReadable = {
   sheep: number;

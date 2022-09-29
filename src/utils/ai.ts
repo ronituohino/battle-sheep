@@ -10,7 +10,7 @@ import {
   setSheep,
 } from "./game";
 import { getRandomInt } from "./random";
-import { Board, Coordinate, GameState, Player } from "./types";
+import { Board, BoardValuePair, Coordinate, GameState, Player } from "./types";
 
 /**
  * Plays the AI turns. Called after the human player's turn ends.
@@ -36,7 +36,7 @@ export function playAi(
     }
 
     // Use AI
-    newBoard = simulate(prevBoard, game, i, players.length);
+    newBoard = simulate(prevBoard, game, i);
 
     // simulate returns the same board object reference if it couldn't move
     if (newBoard === prevBoard) {
@@ -56,6 +56,9 @@ export function playAi(
   return [game, newBoard, moved];
 }
 
+const GOOD = 100000;
+const BAD = -100000;
+
 /**
  * Simulates a turn for the AI. Returns the new state of the game.
  *
@@ -67,13 +70,12 @@ export function simulate(
   board: Board,
   game: GameState,
   playerIndex: number,
-  playerAmount: number,
 ): Board {
   if (game.selectingStart) {
     return setSheep(board, AI_selectStart(game.startTiles), 16, playerIndex);
   }
 
-  const result = minimax(board, 2, playerIndex, playerIndex, playerAmount);
+  const result = alphabeta(board, 4, BAD, GOOD, playerIndex, playerIndex, true);
   return result[1];
 }
 
@@ -94,49 +96,43 @@ function AI_selectStart(startTiles: Coordinate[]): Coordinate {
  * Main AI function in the project. Moves sheep on the board for the AI.
  *
  * @param board Game board
- * @param players Players
- * @returns An AIMove object, which contains the Coordinates from and to, and sheep amount.
+ * @param depth The depth to which we compute minimax
+ * @param a Alpha value
+ * @param b Beta value
+ * @param currentPlayer The current playerIndex we are computing for (0 or 1)
+ * @param maximizing If we want to maximize advantage for this player
+ *
+ * @returns Advantage value and new board
  */
-export function minimax(
+export function alphabeta(
   board: Board,
   depth: number,
-  playerIndex: number,
-  handledPlayerIndex: number,
-  playerAmount: number,
-): [number, Board] {
-  /**
-   * Valuable moves:
-   *  The idea is to first find the AI's sheep
-   *  Then list their possible moves (sheep from, sheep to, amount)
-   *  Then implement some heuristic to value the new board state after that move
-   *  Then take X most valuable boards
-   *
-   * Minimax:
-   *  Before making the move, take the AI's X most valuable moves, and start building a tree.
-   *   - AI takes move x1: use Valuable moves algorithm for the player's moves and use a heuristic to evaluate the board situation.
-   *   - AI takes move x2: again see what Valuable moves the player could take and evaluate the board situation.
-   *
-   *  After building this tree to Y depth, find the most optimal move for the AI.
-   *
-   * Optimization:
-   *  The Minimax algorithm could be optimized by alpha-beta pruning...
-   */
+  a: number,
+  b: number,
+  aiPlayer: number,
+  currentPlayer: number,
+  maximizing: boolean,
+): BoardValuePair {
+  // Find all possible move origin-target pairs
+  const possibleMoves = getPossibleMoves(board, currentPlayer);
 
-  // Find all possible moves, and evaluate the amount of sheep to move
-  const possibleMoves = getPossibleMoves(board, handledPlayerIndex);
-
-  const advantageWithNewBoard: [number, Board][] = [];
-
-  // No possible moves
+  // Win/Lose check, add depth to values to prioritise early wins
   if (possibleMoves.length === 0) {
-    if (handledPlayerIndex === playerIndex) {
+    if (maximizing) {
       // If this is the handled AI, bad move (drove itself out of moves)
-      return [-100, board];
+      return [BAD - depth, board];
     } else {
       // If this is another player, really good (no moves for the other player)
-      return [100, board];
+      return [GOOD + depth, board];
     }
   }
+
+  // If no win/lose, and on bottom depth, use heuristic to evaluate sitation
+  if (depth === 0) {
+    return [evaluate(board, aiPlayer), board];
+  }
+
+  let value: BoardValuePair = [maximizing ? BAD : GOOD, board];
 
   // Iterate over all possible moves
   for (let m = 0; m < possibleMoves.length; m++) {
@@ -144,46 +140,54 @@ export function minimax(
 
     // With all possible sheep amounts...
     for (let s = 1; s < move.maxSheep; s++) {
-      const newBoard = moveSheep(
-        board,
-        move.from,
-        move.to,
-        s,
-        handledPlayerIndex,
-      );
-      // Always evaluate situation for playerIndex
-      let advantage = evaluate(newBoard)[playerIndex];
+      const newBoard = moveSheep(board, move.from, move.to, s, currentPlayer);
 
-      if (depth > 0) {
-        // Results from DFS
-        const result = minimax(
+      if (maximizing) {
+        const res = alphabeta(
           newBoard,
           depth - 1,
-          playerIndex,
-          handledPlayerIndex + 1 >= playerAmount ? 0 : handledPlayerIndex + 1,
-          playerAmount,
+          a,
+          b,
+          aiPlayer,
+          nextPlayerIndex(currentPlayer),
+          false,
         );
-
-        if (result[0] > advantage) {
-          advantage = result[0];
+        if (res[0] > value[0]) {
+          value = [res[0], newBoard];
         }
+        if (value[0] >= b) {
+          break;
+        }
+        a = Math.max(a, value[0]);
+      } else {
+        const res = alphabeta(
+          newBoard,
+          depth - 1,
+          a,
+          b,
+          aiPlayer,
+          nextPlayerIndex(currentPlayer),
+          true,
+        );
+        if (res[0] < value[0]) {
+          value = [res[0], newBoard];
+        }
+        if (value[0] <= a) {
+          break;
+        }
+        b = Math.min(b, value[0]);
       }
-
-      advantageWithNewBoard.push([advantage, newBoard]);
     }
   }
 
-  // If finding move for player, sort by best, if for opponents, sort by worst
-  let sorted = [];
-  if (handledPlayerIndex === playerIndex) {
-    // Best move
-    sorted = advantageWithNewBoard.sort((a, b) => b[0] - a[0]);
-  } else {
-    // Worst move
-    sorted = advantageWithNewBoard.sort((a, b) => a[0] - b[0]);
-  }
+  return value;
+}
 
-  return sorted[0];
+function nextPlayerIndex(index: number) {
+  if (index === 0) {
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -196,10 +200,10 @@ export function minimax(
  *
  *
  * @param board Game board
- * @returns An array of advantage/value for each player
+ * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
-export function evaluate(board: Board): number[] {
-  const advantage: number[] = [];
+export function evaluate(board: Board, aiPlayer: number): number {
+  let advantage = 0;
 
   // Iterate over all tiles
   for (let x = 0; x < board.length; x++) {
@@ -239,7 +243,11 @@ export function evaluate(board: Board): number[] {
         value += tileInfo.sheep;
       }
 
-      advantage[tileInfo.playerIndex] = value;
+      if (tileInfo.playerIndex === aiPlayer) {
+        advantage += value;
+      } else {
+        advantage -= value;
+      }
     }
   }
 

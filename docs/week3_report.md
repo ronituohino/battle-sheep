@@ -1,4 +1,4 @@
-# Week 2
+# Week 3
 
 **Project hours this week: 11**
 
