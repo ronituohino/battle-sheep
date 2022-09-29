@@ -139,7 +139,14 @@ export function alphabeta(
     const move = possibleMoves[m];
 
     // With all possible sheep amounts...
-    for (let s = 1; s < move.maxSheep; s++) {
+    /**
+     * Iterate from half sheep amount, go up 1, down 2, up 3...
+     * e.g. maxSheep: 8 -> 4-5-3-6-2-7-1
+     * e.g. maxSheep: 7 -> 3-4-2-5-1-6
+     */
+    let s = Math.floor(move.maxSheep / 2);
+    let i = 1;
+    while (s > 0 && s < move.maxSheep) {
       const newBoard = moveSheep(board, move.from, move.to, s, currentPlayer);
 
       if (maximizing) {
@@ -177,6 +184,14 @@ export function alphabeta(
         }
         b = Math.min(b, value[0]);
       }
+
+      s += i;
+      if (i > 0) {
+        i += 1;
+      } else {
+        i -= 1;
+      }
+      i *= -1;
     }
   }
 
