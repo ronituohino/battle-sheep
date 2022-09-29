@@ -7,9 +7,9 @@ import {
   moveSheep,
   setSheep,
   getPlayersSheepTileAmount,
-} from "../src/utils/game";
+} from "../../src/utils/game";
 import { describe, it, expect } from "vitest";
-import { levels } from "../src/levels";
+import { levels } from "../../src/levels";
 
 const testBoard = levels.test.board;
 

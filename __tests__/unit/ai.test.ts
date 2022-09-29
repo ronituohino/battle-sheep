@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { playAi } from "../src/utils/ai";
-import { levels } from "../src/levels";
-import { Player } from "../src/utils/types";
-import { fillBoard, simulateTurns } from "./helper";
+import { playAi } from "../../src/utils/ai";
+import { levels } from "../../src/levels";
+import { Player } from "../../src/utils/types";
+import { fillBoard, simulateTurns } from "../helper";
 
 const testBoard = levels.test.board;
 

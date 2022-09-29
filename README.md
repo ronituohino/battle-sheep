@@ -82,6 +82,12 @@ Run unit tests:
 npm run test
 ```
 
+Run performance tests:
+
+```
+npm run performance
+```
+
 Generate unit test coverage report:
 
 ```
