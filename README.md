@@ -18,7 +18,8 @@ https://battle-sheep-game.web.app/
 
 [Week 1](./docs/week1_report.md)  
 [Week 2](./docs/week2_report.md)  
-[Week 3](./docs/week3_report.md)
+[Week 3](./docs/week3_report.md)  
+[Week 4](./docs/week4_report.md)
 
 ### Test coverage
 
