@@ -17,7 +17,7 @@ describe("game util", () => {
   it("can initialize the game", () => {
     const init = initializeGame({
       aiPlayers: 1,
-      levelName: "test",
+      levelKey: "test",
       watchMode: false,
     });
     expect(init.board).toEqual(testBoard);

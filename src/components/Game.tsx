@@ -1,4 +1,4 @@
-import type {
+import {
   AppState,
   ConfigSchema,
   GameState,
@@ -6,6 +6,9 @@ import type {
   MovePlot,
   Board,
   Player,
+  GameStateStatic,
+  GameInfo,
+  GameStateDynamic,
 } from "../utils/types";
 import { Button, Heading, Flex, Box } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -18,8 +21,9 @@ import {
   fromBoardNumber,
   getPossibleMoves,
   getPlayersSheepTileAmount,
+  getWinner,
 } from "../utils/game";
-import { playAi } from "../utils/ai";
+import { simulate } from "../utils/ai";
 
 import { Tile } from "../components/Tile";
 import { MoveSheepModal } from "../components/MoveSheepModal";
@@ -33,9 +37,11 @@ export type GameProps = {
 
 export function Game({ setAppState, config }: GameProps) {
   // Main states
+  const [gameStatic, setGameStatic] = useState<GameStateStatic>();
   const [board, setBoard] = useState<Board>();
-  const [players, setPlayers] = useState<Player[]>();
-  const [game, setGame] = useState<GameState>();
+  const [info, setInfo] = useState<GameInfo>();
+  const initialized =
+    gameStatic !== undefined && board !== undefined && info !== undefined;
 
   // UI
   // Tile states
@@ -48,7 +54,7 @@ export function Game({ setAppState, config }: GameProps) {
   const [move, setMove] = useState<MovePlot>();
   // Called from MoveSheepModal.tsx
   function makeMove(amount: number) {
-    if (!move || !board) {
+    if (!move || !initialized) {
       return;
     }
 
@@ -69,12 +75,12 @@ export function Game({ setAppState, config }: GameProps) {
     highlighted: boolean,
     selected: boolean,
   ) {
-    if (selected || !board || !game || !players) {
+    if (selected || !initialized) {
       return;
     }
 
     if (highlighted) {
-      if (game.selectingStart) {
+      if (info.selectingStart) {
         // Selecting starting tile
         setBoard(setSheep(board, coords, 16, 0));
 
@@ -112,49 +118,26 @@ export function Game({ setAppState, config }: GameProps) {
     }
   }
 
+  // Called after the human player ends their turn
   useEffect(() => {
-    function finish(board: Board, game: GameState, players: Player[]) {
-      const [newGame, newBoard, moved] = playAi(board, game, players);
+    function nextAiTurn(
+      board: Board,
+      selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
+      startTiles: GameStateStatic["startTiles"] = [],
+    ) {
+      const [newBoard, moved] = simulate(board, selectingStart, startTiles);
 
       // If player can't make any move
       if (getPossibleMoves(newBoard, 0).length === 0) {
-        // And AI moved last turn
-        if (moved.some((v) => v)) {
-          // Simulate more AI
-          finish(newBoard, newGame, players);
-        } else {
+        // And AI can't move
+        if (!moved) {
           // End game
-          const sheepAmounts = getPlayersSheepTileAmount(
-            newBoard,
-            players.length,
-          );
+          getWinner();
 
-          // Find biggest value, and keep log of sheep amounts
-          const values: { [index: number]: number } = {};
-          let biggest = 0;
-          for (let l = 0; l < sheepAmounts.length; l++) {
-            const sheepAmount = sheepAmounts[l];
-            if (sheepAmount > biggest) {
-              biggest = sheepAmount;
-            }
-
-            if (sheepAmount in values) {
-              values[sheepAmount] += 1;
-            } else {
-              values[sheepAmount] = 1;
-            }
-          }
-
-          // If threre are two occurrences of the biggest value, game is a tie, otherwise a single winner
-          setGame({
-            ...newGame,
-            gameEnded: true,
-            winner:
-              values[biggest] > 1
-                ? undefined
-                : players[sheepAmounts.indexOf(biggest)],
-          });
+          setGame();
           setBoard(newBoard);
+        } else {
+          nextAiTurn(newBoard);
         }
       } else {
         setGame(newGame);
@@ -162,8 +145,8 @@ export function Game({ setAppState, config }: GameProps) {
       }
     }
 
-    if (finished && board && game && players) {
-      finish(board, game, players);
+    if (finished && initialized) {
+      nextAiTurn(board, info.selectingStart, gameStatic.startTiles);
       setFinished(false);
     }
   }, [finished]);
@@ -171,14 +154,11 @@ export function Game({ setAppState, config }: GameProps) {
   // Initialize game
   useEffect(() => {
     const game = initializeGame(config);
-    setBoard(game.board);
-    setPlayers(game.players);
-    setGame({
-      selectingStart: true,
-      startTiles: game.startTiles,
-      gameEnded: false,
-    });
-    setHighlightedHexes(game.startTiles);
+    setGameStatic(game.static);
+    setBoard(game.dynamic.board);
+    setInfo(game.dynamic.info);
+
+    setHighlightedHexes(game.static.startTiles);
   }, []);
 
   return (
@@ -212,6 +192,8 @@ export function Game({ setAppState, config }: GameProps) {
                 const { playerIndex, sheep } = fromBoardNumber(
                   board[x][y] as number,
                 );
+                const isPlayerSheep = players[playerIndex].human;
+
                 return (
                   <Tile
                     key={`${x}${y}`}
@@ -223,6 +205,7 @@ export function Game({ setAppState, config }: GameProps) {
                     }
                     highlighted={highlighted}
                     selected={selected}
+                    clickable={highlighted || (sheep > 1 && isPlayerSheep)}
                     click={() => handleTileClick([x, y], highlighted, selected)}
                   />
                 );

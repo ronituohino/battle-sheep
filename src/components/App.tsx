@@ -11,9 +11,7 @@ export function App() {
   const [appState, setAppState] = useState<AppState>("config");
 
   const initialValues: ConfigSchema = {
-    levelName: "one",
-    watchMode: false,
-    aiPlayers: 1,
+    levelKey: "one",
   };
   const formik = useFormik({
     initialValues,

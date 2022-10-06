@@ -7,16 +7,16 @@ import type {
   Player,
   Coordinate,
   Board,
-  Level,
   SheepReadable,
   SheepBoard,
   MovePlot,
+  GameState,
 } from "./types";
 import { levels } from "../levels";
 
 import { copy } from "./copy";
 
-export const playerColors = ["#f15bb5", "#fee440", "#00bbf9", "#9b5de5"];
+export const playerColors = ["#f15bb5", "#fee440"];
 
 /**
  * Initializes the game:
@@ -26,38 +26,38 @@ export const playerColors = ["#f15bb5", "#fee440", "#00bbf9", "#9b5de5"];
  * @param config The game configuration
  * @returns An object with game information
  */
-export function initializeGame(config: ConfigSchema) {
+export function initializeGame(config: ConfigSchema): GameState {
   // Initialize players
   const players: Player[] = [];
-  let playerAmount = 0;
-  if (!config.watchMode) {
-    players.push({
-      name: "You",
-      color: playerColors[playerAmount],
-      human: true,
-    });
-    playerAmount++;
-  }
+  players.push({
+    name: "You",
+    color: playerColors[0],
+    human: true,
+  });
 
-  for (let i = 0; i < config.aiPlayers; i++) {
-    players.push({
-      name: `AI ${i}`,
-      color: playerColors[playerAmount],
-      human: false,
-    });
-    playerAmount++;
-  }
+  players.push({
+    name: "AI",
+    color: playerColors[1],
+    human: false,
+  });
 
   // Deep copy level object
-  const level = JSON.parse(JSON.stringify(levels[config.levelName])) as Level;
+  const level = copy(levels[config.levelKey]);
 
   return {
-    players,
-    sizeX: level.sizeX,
-    sizeY: level.sizeY,
-    board: level.board,
-    selectingStart: true,
-    startTiles: level.startTiles,
+    static: {
+      players,
+      levelName: level.name,
+      startTiles: level.startTiles,
+    },
+    dynamic: {
+      board: level.board,
+      info: {
+        selectingStart: true,
+        gameEnded: false,
+        winner: undefined,
+      },
+    },
   };
 }
 
@@ -253,6 +253,31 @@ export function getPlayersSheepTileAmount(
   }
 
   return sheepAmount;
+}
+
+export function getWinner(board: Board, players: Player[]) {
+  const sheepAmounts = getPlayersSheepTileAmount(board, players.length);
+
+  // Find biggest value, and keep log of sheep amounts
+  const values: { [index: number]: number } = {};
+  let biggest = 0;
+  for (let l = 0; l < sheepAmounts.length; l++) {
+    const sheepAmount = sheepAmounts[l];
+    if (sheepAmount > biggest) {
+      biggest = sheepAmount;
+    }
+
+    if (sheepAmount in values) {
+      values[sheepAmount] += 1;
+    } else {
+      values[sheepAmount] = 1;
+    }
+  }
+
+  // If threre are two occurrences of the biggest value, game is a tie, otherwise a single winner
+  return values[biggest] > 1
+    ? undefined
+    : players[sheepAmounts.indexOf(biggest)];
 }
 
 /**

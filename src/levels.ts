@@ -4,8 +4,6 @@
 export const levels = {
   one: {
     name: "One",
-    sizeX: 4,
-    sizeY: 6,
     board: [
       [0, 0, 0, 0],
       [0, 0, 0, 0, 0],
@@ -29,11 +27,9 @@ export const levels = {
       [3, 1],
     ],
   },
-  two: { name: "Two", sizeX: 1, sizeY: 1, board: [[0]], startTiles: [[0, 0]] },
+  two: { name: "Two", board: [[0]], startTiles: [[0, 0]] },
   test: {
     name: "Test level",
-    sizeX: 3,
-    sizeY: 3,
     board: [
       [-1, 0],
       [0, 0, 0, 0],

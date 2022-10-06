@@ -7,20 +7,30 @@ import { levels } from "../levels";
 export type AppState = "config" | "game";
 
 export type Levels = typeof levels;
-export type LevelName = keyof Levels;
-export type Level = Levels[LevelName];
+export type LevelKey = keyof Levels;
+export type Level = Levels[LevelKey];
 
 export type ConfigSchema = {
-  levelName: LevelName;
-  watchMode: boolean;
-  aiPlayers: number;
+  levelKey: LevelKey;
 };
 
 export type GameState = {
+  static: GameStateStatic;
+  dynamic: GameStateDynamic;
+};
+export type GameStateStatic = {
+  players: Player[];
+  levelName: string;
+  startTiles: Level["startTiles"];
+};
+export type GameStateDynamic = {
+  board: Board;
+  info: GameInfo;
+};
+export type GameInfo = {
   selectingStart: boolean;
-  startTiles: Coordinate[];
   gameEnded: boolean;
-  winner?: Player;
+  winner: Player | undefined;
 };
 
 export type Player = {

@@ -5,6 +5,7 @@ export type TileProps = {
   color: string;
   highlighted: boolean;
   selected: boolean;
+  clickable: boolean;
   click: () => void;
 };
 
@@ -15,6 +16,7 @@ export const Tile = ({
   color,
   highlighted,
   selected,
+  clickable,
   click,
 }: TileProps) => {
   let properties = {
@@ -47,8 +49,12 @@ export const Tile = ({
       }}
     >
       <g
-        style={{ cursor: sheep > 1 || highlighted ? "pointer" : "auto" }}
-        onClick={click}
+        style={{ cursor: clickable ? "pointer" : "auto" }}
+        onClick={() => {
+          if (clickable) {
+            click();
+          }
+        }}
       >
         <polygon
           points="50 0,100 25,100 75, 50 100,0 75,0 25"

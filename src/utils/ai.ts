@@ -10,51 +10,13 @@ import {
   setSheep,
 } from "./game";
 import { getRandomInt } from "./random";
-import { Board, BoardValuePair, Coordinate, GameState, Player } from "./types";
-
-/**
- * Plays the AI turns. Called after the human player's turn ends.
- *
- * @param board Game board
- * @param game Game state
- * @param players Players
- * @returns this kind of array: [newGameState, newBoardState, moved]
- */
-export function playAi(
-  board: Board,
-  game: GameState,
-  players: Player[],
-): [GameState, Board, boolean[]] {
-  let prevBoard = board;
-  let newBoard = prevBoard;
-  const moved = [];
-
-  for (let i = 0; i < players.length; i++) {
-    const player = players[i];
-    if (player.human) {
-      continue;
-    }
-
-    // Use AI
-    newBoard = simulate(prevBoard, game, i);
-
-    // simulate returns the same board object reference if it couldn't move
-    if (newBoard === prevBoard) {
-      moved.push(false);
-    } else {
-      moved.push(true);
-    }
-
-    prevBoard = newBoard;
-  }
-
-  // Turn off selectingStart mode
-  if (game.selectingStart) {
-    game.selectingStart = false;
-  }
-
-  return [game, newBoard, moved];
-}
+import {
+  Board,
+  BoardValuePair,
+  Coordinate,
+  GameStateDynamic,
+  GameStateStatic,
+} from "./types";
 
 const GOOD = 100000;
 const BAD = -100000;
@@ -68,15 +30,24 @@ const BAD = -100000;
  */
 export function simulate(
   board: Board,
-  game: GameState,
-  playerIndex: number,
-): Board {
-  if (game.selectingStart) {
-    return setSheep(board, AI_selectStart(game.startTiles), 16, playerIndex);
+  selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
+  startTiles: GameStateStatic["startTiles"] = [],
+): [Board, boolean] {
+  let moved = false;
+  let newBoard;
+
+  if (selectingStart && startTiles !== undefined) {
+    newBoard = setSheep(board, AI_selectStart(startTiles), 16, 1);
+  } else {
+    newBoard = alphabeta(board, 4, BAD, GOOD, 1, true)[1];
   }
 
-  const result = alphabeta(board, 4, BAD, GOOD, playerIndex, playerIndex, true);
-  return result[1];
+  // if AI couldn't move, newBoard has same reference as board
+  if (newBoard !== board) {
+    moved = true;
+  }
+
+  return [newBoard, moved];
 }
 
 /**
@@ -109,7 +80,6 @@ export function alphabeta(
   depth: number,
   a: number,
   b: number,
-  aiPlayer: number,
   currentPlayer: number,
   maximizing: boolean,
 ): BoardValuePair {
@@ -129,7 +99,7 @@ export function alphabeta(
 
   // If no win/lose, and on bottom depth, use heuristic to evaluate sitation
   if (depth === 0) {
-    return [evaluate(board, aiPlayer), board];
+    return [evaluate(board), board];
   }
 
   let value: BoardValuePair = [maximizing ? BAD : GOOD, board];
@@ -155,7 +125,6 @@ export function alphabeta(
           depth - 1,
           a,
           b,
-          aiPlayer,
           nextPlayerIndex(currentPlayer),
           false,
         );
@@ -172,7 +141,6 @@ export function alphabeta(
           depth - 1,
           a,
           b,
-          aiPlayer,
           nextPlayerIndex(currentPlayer),
           true,
         );
@@ -213,11 +181,10 @@ function nextPlayerIndex(index: number) {
  *  Take the sheep amount, see if there are excess sheep compared to free space:
  *    any excess sheep negate advantage * 3
  *
- *
  * @param board Game board
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
-export function evaluate(board: Board, aiPlayer: number): number {
+export function evaluate(board: Board): number {
   let advantage = 0;
 
   // Iterate over all tiles
@@ -258,7 +225,7 @@ export function evaluate(board: Board, aiPlayer: number): number {
         value += tileInfo.sheep;
       }
 
-      if (tileInfo.playerIndex === aiPlayer) {
+      if (tileInfo.playerIndex === 1) {
         advantage += value;
       } else {
         advantage -= value;
