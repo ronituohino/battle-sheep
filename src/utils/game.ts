@@ -36,9 +36,7 @@ export function initializeGame(config: ConfigSchema): GameState {
       levelName: level.name,
       boardXSize: level.sizeX,
       boardYSize: level.sizeY,
-      startTiles: level.startTiles.map((coord) =>
-        toBoardCoordinate(coord[0], coord[1], level.sizeX),
-      ),
+      startTiles: level.startTiles,
     },
     dynamic: {
       board: level.board,

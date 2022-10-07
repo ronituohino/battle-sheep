@@ -12,12 +12,12 @@ import {
 import { describe, it, expect } from "vitest";
 import { levels } from "../../src/levels";
 
-const testLevel = levels.one;
+const testLevel = levels.test;
 
 describe("game util", () => {
   it("can initialize the game", () => {
     const init = initializeGame({
-      levelKey: "one",
+      levelKey: "test",
     });
     expect(init.dynamic.board).toEqual(testLevel.board);
     expect(init.dynamic.info.selectingStart).toEqual(true);
