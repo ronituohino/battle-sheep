@@ -85,7 +85,7 @@ export function Game({ setAppState, config }: GameProps) {
 
         setHighlightedHexes(undefined);
         setFinished(true);
-      } else if (selectedHex) {
+      } else if (selectedHex !== undefined) {
         // Check if there are sheep to move
         const value = board[selectedHex];
 
@@ -211,7 +211,7 @@ export function Game({ setAppState, config }: GameProps) {
           x={x}
           y={y}
           sheep={sheep}
-          color={["#f15bb5", "#fee440"][player]}
+          color={player === -1 ? "white" : ["#f15bb5", "#fee440"][player]}
           highlighted={highlighted}
           selected={selected}
           clickable={highlighted || (sheep > 1 && isPlayerSheep)}

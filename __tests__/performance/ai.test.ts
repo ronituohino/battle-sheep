@@ -29,7 +29,7 @@ describe("ai", () => {
     simulate(start[0], testLevel.sizeX, testLevel.sizeY);
     console.timeEnd("first move");
   });
-  it("simulate 3 turns for both", () => {
+  it("simulate 3 turns for ai", () => {
     let board = simulate(
       testLevel.board,
       testLevel.sizeX,
@@ -38,12 +38,12 @@ describe("ai", () => {
       testLevel.startTiles,
     );
 
-    console.time("3 moves for both");
+    console.time("3 moves for ai");
     for (let i = 0; i < 3; i++) {
       board = simulate(board[0], testLevel.sizeX, testLevel.sizeY);
     }
     console.log("situation after 3 moves");
     console.log(board[0]);
-    console.timeEnd("3 moves for both");
+    console.timeEnd("3 moves for ai");
   });
 });

@@ -33,4 +33,14 @@ describe("ai", () => {
     expect(result[0]).toEqual(levels.testFull.board);
     expect(result[0]).toBe(levels.testFull.board);
   });
+
+  it("does it get stuck?", () => {
+    const situation = [
+      18, 1, 19, 18, 0, 0, 3, 1, 2, 1, 5, 0, 1, 0, 3, 1, 20, 0, 7, 1, 2, 0, 0,
+      26,
+    ];
+    const result = simulate(situation, 6, 4);
+
+    expect(result[0]).not.toEqual(situation);
+  });
 });

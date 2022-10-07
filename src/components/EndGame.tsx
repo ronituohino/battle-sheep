@@ -17,7 +17,7 @@ export function EndGame({ gameEnded, winner, setAppState }: EndGameProps) {
           {winner === undefined ? (
             <Text>The game is a tie!</Text>
           ) : (
-            <Text>Winner is: {winner.name}</Text>
+            <Text>{winner === 0 ? "You win!" : "The AI wins."}</Text>
           )}
 
           <Button onClick={() => setAppState("config")}>Back to config</Button>

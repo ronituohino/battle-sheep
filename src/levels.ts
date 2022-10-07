@@ -12,7 +12,7 @@ export const levels = {
     startTiles: [0, 1, 2, 3, 6, 12, 18, 19, 20, 14, 15, 10, 16, 23],
   },
   testStarted: {
-    name: "Test level wihere both players have started",
+    name: "Test level where both players have started",
     sizeX: 6,
     sizeY: 4,
     board: [
