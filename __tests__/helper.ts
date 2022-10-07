@@ -1,4 +1,4 @@
-import { playAi } from "../src/utils/ai";
+import { simulate } from "../src/utils/ai";
 import { setSheep } from "../src/utils/game";
 import { Board, GameState, Player } from "../src/utils/types";
 
@@ -11,7 +11,7 @@ export function simulateTurns(
   let result: [GameState, Board, boolean[]] = [game, board, []];
 
   for (let i = 0; i < turns; i++) {
-    result = playAi(result[1], result[0], players);
+    result = simulate(result[1], result[0], players);
   }
 
   return result;

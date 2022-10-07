@@ -13,7 +13,6 @@ describe("copy.ts", () => {
         ],
         { test: 1, something: "more" },
       ],
-      false,
     ];
     const newObject = copy(object);
 

@@ -1,127 +1,149 @@
 import {
-  toBoardNumber,
-  fromBoardNumber,
   initializeGame,
   getPossibleMovesFromTile,
   getPossibleMoves,
   moveSheep,
   setSheep,
   getPlayersSheepTileAmount,
+  boardValueToPlayerIndex,
+  boardValueToSheepAmount,
+  toBoardCoordinate,
 } from "../../src/utils/game";
 import { describe, it, expect } from "vitest";
 import { levels } from "../../src/levels";
 
-const testBoard = levels.test.board;
+const testLevel = levels.one;
 
 describe("game util", () => {
   it("can initialize the game", () => {
     const init = initializeGame({
-      aiPlayers: 1,
-      levelKey: "test",
-      watchMode: false,
+      levelKey: "one",
     });
-    expect(init.board).toEqual(testBoard);
-    expect(init.selectingStart).toEqual(true);
-    expect(init.players).toHaveLength(2);
-  });
-
-  it("can turn player index and sheep amount to board", () => {
-    expect(toBoardNumber(16, 0)).toEqual(16);
-    expect(toBoardNumber(14, 1)).toEqual(114);
-    expect(toBoardNumber(6, 2)).toEqual(206);
-    expect(toBoardNumber(3, 3)).toEqual(303);
+    expect(init.dynamic.board).toEqual(testLevel.board);
+    expect(init.dynamic.info.selectingStart).toEqual(true);
   });
 
   it("can read player index and sheep amount from board", () => {
-    expect(fromBoardNumber(6)).toEqual({ playerIndex: 0, sheep: 6 });
-    expect(fromBoardNumber(112)).toEqual({ playerIndex: 1, sheep: 12 });
-    expect(fromBoardNumber(210)).toEqual({ playerIndex: 2, sheep: 10 });
-    expect(fromBoardNumber(301)).toEqual({ playerIndex: 3, sheep: 1 });
+    expect(boardValueToPlayerIndex(17)).toEqual(0);
+    expect(boardValueToPlayerIndex(6)).toEqual(0);
+    expect(boardValueToPlayerIndex(2)).toEqual(0);
+    expect(boardValueToPlayerIndex(18)).toEqual(1);
+    expect(boardValueToPlayerIndex(20)).toEqual(1);
+    expect(boardValueToPlayerIndex(33)).toEqual(1);
+  });
+
+  it("can read sheep amount from board", () => {
+    expect(boardValueToSheepAmount(17)).toEqual(16);
+    expect(boardValueToSheepAmount(6)).toEqual(5);
+    expect(boardValueToSheepAmount(2)).toEqual(1);
+    expect(boardValueToSheepAmount(18)).toEqual(1);
+    expect(boardValueToSheepAmount(20)).toEqual(3);
+    expect(boardValueToSheepAmount(33)).toEqual(16);
   });
 
   it("can read possible moves from board", () => {
-    let tiles = getPossibleMovesFromTile(testBoard, [0, 1]);
-    expect(tiles).toContainEqual([2, 1]);
-    expect(tiles).toContainEqual([4, 5]);
-    expect(tiles).toHaveLength(2);
-
-    // Random extra, (test if tests work)
-    expect(tiles).not.toContainEqual([2, 2]);
+    let tiles = getPossibleMovesFromTile(testLevel.board, testLevel.sizeX, 0);
+    expect(tiles).toContainEqual(toBoardCoordinate(0, 3, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(3, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(2, 2, testLevel.sizeX));
+    expect(tiles).toHaveLength(3);
 
     // The coordinate we have selected shouldn't be in the results
-    expect(tiles).not.toContainEqual([0, 1]);
+    expect(tiles).not.toContainEqual(0);
 
-    tiles = getPossibleMovesFromTile(testBoard, [3, 4]);
-    expect(tiles).toContainEqual([3, 3]);
-    expect(tiles).toContainEqual([0, 1]);
-    expect(tiles).toContainEqual([4, 5]);
-    expect(tiles).toContainEqual([7, 4]);
-    expect(tiles).toContainEqual([3, 6]);
-    expect(tiles).toHaveLength(5);
+    tiles = getPossibleMovesFromTile(testLevel.board, testLevel.sizeX, 3);
+    expect(tiles).toContainEqual(toBoardCoordinate(0, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(3, 2, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(4, 1, testLevel.sizeX));
+    expect(tiles).toHaveLength(3);
 
-    tiles = getPossibleMovesFromTile(testBoard, [6, 0]);
-    expect(tiles).toContainEqual([6, 5]);
-    expect(tiles).toHaveLength(1);
+    tiles = getPossibleMovesFromTile(
+      testLevel.board,
+      testLevel.sizeX,
+      toBoardCoordinate(2, 1, testLevel.sizeX),
+    );
+    expect(tiles).toContainEqual(toBoardCoordinate(1, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(2, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(4, 1, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(3, 2, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(2, 3, testLevel.sizeX));
+    expect(tiles).toContainEqual(toBoardCoordinate(0, 1, testLevel.sizeX));
+    expect(tiles).toHaveLength(6);
   });
 
   it("can read all possible moves for a player", () => {
-    let newBoard = setSheep(testBoard, [0, 1], 16, 0);
-    newBoard = setSheep(newBoard, [4, 3], 16, 1);
+    let newBoard = setSheep(testLevel.board, 1, 16, 0);
+    newBoard = setSheep(
+      newBoard,
+      toBoardCoordinate(3, 2, testLevel.sizeX),
+      16,
+      1,
+    );
 
-    const allMoves = getPossibleMoves(newBoard, 0);
+    const allMoves = getPossibleMoves(
+      newBoard,
+      testLevel.sizeX,
+      testLevel.sizeY,
+      0,
+    );
 
-    expect(allMoves).toHaveLength(2);
+    expect(allMoves).toHaveLength(4);
     expect(allMoves).toEqual([
-      { from: [0, 1], to: [2, 1], maxSheep: 16 },
-      { from: [0, 1], to: [4, 5], maxSheep: 16 },
+      { from: 1, to: toBoardCoordinate(1, 1, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: toBoardCoordinate(3, 0, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: toBoardCoordinate(2, 1, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: toBoardCoordinate(0, 0, testLevel.sizeX), maxSheep: 15 },
     ]);
   });
 
   it("can set sheep", () => {
-    let newBoard = setSheep(testBoard, [0, 1], 16, 0);
-    expect(newBoard[0][1]).toEqual(16);
-    expect(newBoard).not.toContainEqual(116);
+    let index = toBoardCoordinate(0, 1, testLevel.sizeX);
+    let newBoard = setSheep(testLevel.board, index, 16, 0);
+    expect(newBoard[index]).toEqual(17);
 
-    newBoard = setSheep(testBoard, [1, 0], 10, 1);
-    expect(newBoard[1][0]).toEqual(110);
-    expect(newBoard).not.toContainEqual(10);
-    expect(newBoard).not.toContainEqual(16);
-
-    newBoard = setSheep(testBoard, [1, 1], 6, 2);
-    expect(newBoard[1][1]).toEqual(206);
+    index = toBoardCoordinate(1, 0, testLevel.sizeX);
+    newBoard = setSheep(testLevel.board, index, 10, 1);
+    expect(newBoard[index]).toEqual(27);
   });
 
   it("can move sheep", () => {
-    let boardWithSheep = setSheep(testBoard, [0, 1], 16, 0);
+    const index = toBoardCoordinate(0, 1, testLevel.sizeX);
+    let boardWithSheep = setSheep(testLevel.board, index, 16, 0);
 
-    boardWithSheep = moveSheep(boardWithSheep, [0, 1], [2, 1], 6, 0);
-    expect(boardWithSheep[0][1]).toEqual(10);
-    expect(boardWithSheep[2][1]).toEqual(6);
-    expect(boardWithSheep).not.toContainEqual(16);
+    const secondIndex = 0;
+    boardWithSheep = moveSheep(boardWithSheep, index, secondIndex, 6, 0);
+    expect(boardWithSheep[index]).toEqual(11);
+    expect(boardWithSheep[secondIndex]).toEqual(7);
+    expect(boardWithSheep).not.toContainEqual(17);
 
-    boardWithSheep = moveSheep(boardWithSheep, [0, 1], [4, 5], 1, 0);
-    expect(boardWithSheep[0][1]).toEqual(9);
-    expect(boardWithSheep[4][5]).toEqual(1);
-    expect(boardWithSheep).not.toContainEqual(16);
+    const thirdIndex = toBoardCoordinate(0, 3, testLevel.sizeX);
+    boardWithSheep = moveSheep(boardWithSheep, index, thirdIndex, 1, 0);
+    expect(boardWithSheep[index]).toEqual(10);
+    expect(boardWithSheep[thirdIndex]).toEqual(2);
+    expect(boardWithSheep).not.toContainEqual(17);
   });
 
   it("can set sheep, returns different reference", () => {
-    const newBoard = setSheep(testBoard, [0, 1], 1, 0);
-    expect(newBoard).not.toBe(testBoard);
+    const newBoard = setSheep(testLevel.board, 0, 1, 0);
+    expect(newBoard).not.toBe(testLevel.board);
   });
 
   it("can move sheep, returns different reference", () => {
-    const newBoard = setSheep(testBoard, [0, 1], 3, 0);
-    const movedBoard = moveSheep(newBoard, [0, 1], [0, 2], 1, 0);
+    const newBoard = setSheep(testLevel.board, 0, 3, 0);
+    const movedBoard = moveSheep(newBoard, 0, 3, 1, 0);
     expect(movedBoard).not.toBe(newBoard);
   });
 
   it("can count how many tiles players have in control", () => {
-    const newBoard = setSheep(testBoard, [1, 0], 6, 0);
-    const again = setSheep(newBoard, [2, 0], 10, 0);
-    const onceMore = setSheep(again, [3, 0], 2, 1);
+    const newBoard = setSheep(testLevel.board, 0, 6, 0);
+    const again = setSheep(newBoard, 1, 10, 0);
+    const onceMore = setSheep(again, 2, 2, 1);
 
-    const result = getPlayersSheepTileAmount(onceMore, 2);
+    const result = getPlayersSheepTileAmount(
+      onceMore,
+      testLevel.sizeX,
+      testLevel.sizeY,
+    );
 
     expect(result).toHaveLength(2);
     expect(result).toEqual([2, 1]);

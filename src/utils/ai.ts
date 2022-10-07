@@ -3,17 +3,20 @@
  */
 
 import {
-  fromBoardNumber,
+  boardValueToPlayerIndex,
+  boardValueToSheepAmount,
   getPossibleMoves,
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
+  toBoardCoordinate,
+  fromBoardCoordinate,
 } from "./game";
 import { getRandomInt } from "./random";
 import {
   Board,
-  BoardValuePair,
-  Coordinate,
+  BoardEvaluationPair,
+  BoardIndex,
   GameStateDynamic,
   GameStateStatic,
 } from "./types";
@@ -22,14 +25,17 @@ const GOOD = 100000;
 const BAD = -100000;
 
 /**
- * Simulates a turn for the AI. Returns the new state of the game.
+ * Simulates a turn for the AI.
  *
- * @param game Game state
  * @param board  Game board
- * @returns a tuple: [newGameState, newBoardState]
+ * @param selectingStart Are we still selecting start
+ * @param startTiles If we are selecting start, what tiles can be selected?
+ * @returns a tuple: [newBoard, moved], moved tells if AI could make a move
  */
 export function simulate(
   board: Board,
+  boardXSize: number,
+  boardYSize: number,
   selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
   startTiles: GameStateStatic["startTiles"] = [],
 ): [Board, boolean] {
@@ -39,7 +45,16 @@ export function simulate(
   if (selectingStart && startTiles !== undefined) {
     newBoard = setSheep(board, AI_selectStart(startTiles), 16, 1);
   } else {
-    newBoard = alphabeta(board, 4, BAD, GOOD, 1, true)[1];
+    newBoard = alphabeta(
+      board,
+      boardXSize,
+      boardYSize,
+      4,
+      BAD,
+      GOOD,
+      1,
+      true,
+    )[1];
   }
 
   // if AI couldn't move, newBoard has same reference as board
@@ -52,14 +67,9 @@ export function simulate(
 
 /**
  * In the first turn of the game, choose a starting point.
- *
- * @param board Game board
- * @param players Players
- * @returns Coordinate where to place the first 16 sheep
- *
  * @todo Implement heuristic
  */
-function AI_selectStart(startTiles: Coordinate[]): Coordinate {
+function AI_selectStart(startTiles: BoardIndex[]): BoardIndex {
   return startTiles[getRandomInt(startTiles.length)];
 }
 
@@ -77,14 +87,21 @@ function AI_selectStart(startTiles: Coordinate[]): Coordinate {
  */
 export function alphabeta(
   board: Board,
+  boardXSize: number,
+  boardYSize: number,
   depth: number,
   a: number,
   b: number,
   currentPlayer: number,
   maximizing: boolean,
-): BoardValuePair {
+): BoardEvaluationPair {
   // Find all possible move origin-target pairs
-  const possibleMoves = getPossibleMoves(board, currentPlayer);
+  const possibleMoves = getPossibleMoves(
+    board,
+    boardXSize,
+    boardYSize,
+    currentPlayer,
+  );
 
   // Win/Lose check, add depth to values to prioritise early wins
   if (possibleMoves.length === 0) {
@@ -99,10 +116,10 @@ export function alphabeta(
 
   // If no win/lose, and on bottom depth, use heuristic to evaluate sitation
   if (depth === 0) {
-    return [evaluate(board), board];
+    return [evaluate(board, boardXSize, boardYSize), board];
   }
 
-  let value: BoardValuePair = [maximizing ? BAD : GOOD, board];
+  let value: BoardEvaluationPair = [maximizing ? BAD : GOOD, board];
 
   // Iterate over all possible moves
   for (let m = 0; m < possibleMoves.length; m++) {
@@ -122,6 +139,8 @@ export function alphabeta(
       if (maximizing) {
         const res = alphabeta(
           newBoard,
+          boardXSize,
+          boardYSize,
           depth - 1,
           a,
           b,
@@ -138,6 +157,8 @@ export function alphabeta(
       } else {
         const res = alphabeta(
           newBoard,
+          boardXSize,
+          boardYSize,
           depth - 1,
           a,
           b,
@@ -184,31 +205,37 @@ function nextPlayerIndex(index: number) {
  * @param board Game board
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
-export function evaluate(board: Board): number {
+export function evaluate(
+  board: Board,
+  boardXSize: number,
+  boardYSize: number,
+): number {
   let advantage = 0;
 
   // Iterate over all tiles
-  for (let x = 0; x < board.length; x++) {
-    const column = board[x];
-    for (let y = 0; y < column.length; y++) {
+  for (let x = 0; x < boardXSize; x++) {
+    for (let y = 0; y < boardYSize; y++) {
+      const boardCoord = toBoardCoordinate(x, y, boardXSize);
+      const boardValue = board[boardCoord];
+
       // Tile itself has a value of 1
       let value = 1;
-      const tileInfo = fromBoardNumber(column[y]);
+      const sheep = boardValueToSheepAmount(boardValue);
 
       // An empty tile
-      if (tileInfo.playerIndex === -1) {
+      if (sheep > 0) {
         continue;
       }
 
       // Free space in all directions of tile
-      const moves = getPossibleMovesFromTile(board, [x, y]);
+      const moves = getPossibleMovesFromTile(board, boardXSize, boardCoord);
       if (moves) {
         for (let i = 0; i < moves.length; i++) {
-          const targetCoord = moves[i];
-          const [diffX, diffY] = [
-            Math.abs(x - targetCoord[0]),
-            Math.abs(y - targetCoord[1]),
-          ];
+          const targetCoord = fromBoardCoordinate(moves[i], boardXSize);
+
+          const diffX = Math.abs(x - targetCoord[0]);
+          const diffY = Math.abs(y - targetCoord[1]);
+
           if (diffX > 0) {
             value += diffX;
           } else {
@@ -218,14 +245,15 @@ export function evaluate(board: Board): number {
       }
 
       // Excess sheep reduction, harsh reduction
-      if (tileInfo.sheep > value) {
-        value -= tileInfo.sheep * 3;
+      if (sheep > value) {
+        value -= sheep * 3;
       } else {
         // If sheep are within bounds, add value
-        value += tileInfo.sheep;
+        value += sheep;
       }
 
-      if (tileInfo.playerIndex === 1) {
+      const player = boardValueToPlayerIndex(boardValue);
+      if (player === 1) {
         advantage += value;
       } else {
         advantage -= value;

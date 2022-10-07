@@ -1,16 +1,10 @@
-import type { Player } from "../utils/types";
 import { OrderedList, ListItem } from "@chakra-ui/react";
 
-export type PlayersProps = {
-  players: Player[] | undefined;
-};
-
-export function Players({ players }: PlayersProps) {
+export function Players() {
   return (
     <OrderedList>
-      {players?.map((player) => (
-        <ListItem key={player.color}>{player.name}</ListItem>
-      ))}
+      <ListItem key={"you"}>{"You"}</ListItem>
+      <ListItem key={"ai"}>{"AI"}</ListItem>
     </OrderedList>
   );
 }

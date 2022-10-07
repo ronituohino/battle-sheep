@@ -5,18 +5,19 @@
 import type {
   ConfigSchema,
   Player,
-  Coordinate,
+  BoardIndex,
   Board,
-  SheepReadable,
-  SheepBoard,
   MovePlot,
   GameState,
+  GameStateDynamic,
+  Sheep,
+  MovableSheepTile,
+  BoardValue,
+  Coordinate,
 } from "./types";
 import { levels } from "../levels";
 
 import { copy } from "./copy";
-
-export const playerColors = ["#f15bb5", "#fee440"];
 
 /**
  * Initializes the game:
@@ -27,35 +28,24 @@ export const playerColors = ["#f15bb5", "#fee440"];
  * @returns An object with game information
  */
 export function initializeGame(config: ConfigSchema): GameState {
-  // Initialize players
-  const players: Player[] = [];
-  players.push({
-    name: "You",
-    color: playerColors[0],
-    human: true,
-  });
-
-  players.push({
-    name: "AI",
-    color: playerColors[1],
-    human: false,
-  });
-
   // Deep copy level object
   const level = copy(levels[config.levelKey]);
 
   return {
     static: {
-      players,
       levelName: level.name,
-      startTiles: level.startTiles,
+      boardXSize: level.sizeX,
+      boardYSize: level.sizeY,
+      startTiles: level.startTiles.map((coord) =>
+        toBoardCoordinate(coord[0], coord[1], level.sizeX),
+      ),
     },
     dynamic: {
       board: level.board,
       info: {
         selectingStart: true,
         gameEnded: false,
-        winner: undefined,
+        winner: -1,
       },
     },
   };
@@ -82,43 +72,40 @@ export const movement = {
  * */
 export function getPossibleMovesFromTile(
   board: Board,
-  selectedTile: Coordinate,
-): Coordinate[] | undefined {
-  let boundaries: Coordinate[] | undefined = undefined;
+  boardXSize: number,
+  selectedTile: BoardIndex,
+): BoardIndex[] {
+  const boundaries: BoardIndex[] = [];
+  const boardLength = board.length;
 
   // Select movement direction
   Object.values(movement).forEach((move) => {
     let boundaryFound = false;
     const [moveX, moveY] = move;
-    let [x, y] = selectedTile;
 
-    // Move there until we hit an undefined tile or a sheep (> 0)
+    let previousIndex = selectedTile;
+    let selectedIndex = selectedTile;
+
+    // Move there until we hit a missing (0) tile or empty tile (1) or a sheep (> 1)
     while (!boundaryFound) {
-      x += moveX;
-      y += moveY;
+      previousIndex = selectedIndex;
+      selectedIndex += moveX + moveY * boardXSize;
 
-      const horizontalTiles = board[x];
-      if (
-        horizontalTiles === undefined ||
-        horizontalTiles[y] === undefined ||
-        horizontalTiles[y] === -1 ||
-        horizontalTiles[y] > 0
-      ) {
-        boundaryFound = true;
-
-        const boundary = [x - moveX, y - moveY] as [number, number];
-
-        // Don't add the currently selected tile to the boundaries
-        if (
-          !(boundary[0] === selectedTile[0] && boundary[1] === selectedTile[1])
-        ) {
-          // Found a boundary tile
-          if (!boundaries) {
-            boundaries = [boundary];
-          } else {
-            boundaries.push(boundary);
-          }
+      if (selectedIndex < 0 || selectedIndex > boardLength) {
+        found();
+      } else {
+        const value = board[selectedIndex];
+        if (value !== 1) {
+          found();
         }
+      }
+    }
+
+    function found() {
+      boundaryFound = true;
+      // Don't add the currently selected tile to the boundaries
+      if (previousIndex !== selectedTile) {
+        boundaries.push(previousIndex);
       }
     }
   });
@@ -133,24 +120,28 @@ export function getPossibleMovesFromTile(
  * @param playerIndex Player whose sheep are searched
  * @returns Array of sheep objects
  */
-export function getSheepFromPlayer(
+export function getMovableSheepFromPlayer(
   board: Board,
-  playerIndex: number,
-): SheepReadable[] {
-  const sheepArr = [];
-  for (let x = 0; x < board.length; x++) {
-    const column = board[x];
-    for (let y = 0; y < column.length; y++) {
-      const tile = column[y];
-      if (tile > 0) {
-        const tileInfo = fromBoardNumber(tile);
-        if (tileInfo.playerIndex === playerIndex && tileInfo.sheep > 1) {
-          sheepArr.push({ ...tileInfo, coord: [x, y] });
+  boardXSize: number,
+  boardYSize: number,
+  playerIndex: Player,
+): MovableSheepTile[] {
+  const movableSheepTiles = [] as MovableSheepTile[];
+  for (let x = 0; x < boardXSize; x++) {
+    for (let y = 0; y < boardYSize; y++) {
+      const boardIndex = toBoardCoordinate(x, y, boardXSize);
+      const value = board[boardIndex];
+      if (boardValueHasSheep(value)) {
+        const player = boardValueToPlayerIndex(value);
+        const sheep = boardValueToSheepAmount(value);
+
+        if (player === playerIndex && sheep > 1) {
+          movableSheepTiles.push([sheep - 1, boardIndex]);
         }
       }
     }
   }
-  return sheepArr;
+  return movableSheepTiles;
 }
 
 /**
@@ -159,26 +150,29 @@ export function getSheepFromPlayer(
  *
  * @returns Array of all possible moves for given player
  */
-export function getPossibleMoves(board: Board, playerIndex: number) {
+export function getPossibleMoves(
+  board: Board,
+  boardXSize: number,
+  boardYSize: number,
+  playerIndex: Player,
+) {
   const moves: MovePlot[] = [];
-  const sheepArr = getSheepFromPlayer(board, playerIndex);
-  for (let s = 0; s < sheepArr.length; s++) {
-    const tile = sheepArr[s];
-    // Only handle sheep tiles with a movable amount of sheep
-    if (tile.sheep <= 1) {
-      continue;
-    }
+  const movableSheepTiles = getMovableSheepFromPlayer(
+    board,
+    boardXSize,
+    boardYSize,
+    playerIndex,
+  );
+  for (let s = 0; s < movableSheepTiles.length; s++) {
+    const [sheep, coord] = movableSheepTiles[s];
 
-    const possibleMoves = getPossibleMovesFromTile(board, tile.coord);
-    if (possibleMoves === undefined) {
-      continue;
-    }
+    const possibleMoves = getPossibleMovesFromTile(board, boardXSize, coord);
 
     for (let m = 0; m < possibleMoves.length; m++) {
       moves.push({
-        from: tile.coord,
+        from: coord,
         to: possibleMoves[m],
-        maxSheep: tile.sheep,
+        maxSheep: sheep,
       });
     }
   }
@@ -197,16 +191,16 @@ export function getPossibleMoves(board: Board, playerIndex: number) {
  */
 export function moveSheep(
   board: Board,
-  from: Coordinate,
-  to: Coordinate,
-  amount: number,
-  playerIndex: number,
+  from: BoardIndex,
+  to: BoardIndex,
+  amount: Sheep,
+  playerIndex: Player,
 ): Board {
   const newBoard = copy(board);
-  const { sheep } = fromBoardNumber(newBoard[from[0]][from[1]]);
+  const sheep = boardValueToSheepAmount(newBoard[from]);
 
-  newBoard[from[0]][from[1]] = toBoardNumber(sheep - amount, playerIndex);
-  newBoard[to[0]][to[1]] = toBoardNumber(amount, playerIndex);
+  newBoard[from] = toBoardValue(sheep - amount, playerIndex);
+  newBoard[to] = toBoardValue(amount, playerIndex);
 
   return newBoard;
 }
@@ -222,12 +216,12 @@ export function moveSheep(
  */
 export function setSheep(
   board: Board,
-  coord: Coordinate,
-  amount: number,
-  playerIndex: number,
+  coord: BoardIndex,
+  amount: Sheep,
+  playerIndex: Player,
 ): Board {
   const newBoard = copy(board);
-  newBoard[coord[0]][coord[1]] = toBoardNumber(amount, playerIndex);
+  newBoard[coord] = toBoardValue(amount, playerIndex);
   return newBoard;
 }
 
@@ -238,16 +232,16 @@ export function setSheep(
  */
 export function getPlayersSheepTileAmount(
   board: Board,
-  playerAmount: number,
-): number[] {
-  const sheepAmount: number[] = Array(playerAmount).fill(0);
+  boardXSize: number,
+  boardYSize: number,
+): [Sheep, Sheep] {
+  const sheepAmount: [Sheep, Sheep] = [0, 0];
 
-  for (let x = 0; x < board.length; x++) {
-    const column = board[x];
-    for (let y = 0; y < column.length; y++) {
-      const tile = fromBoardNumber(column[y]);
-      if (tile.playerIndex >= 0 && tile.sheep > 0) {
-        sheepAmount[tile.playerIndex] += 1;
+  for (let x = 0; x < boardXSize; x++) {
+    for (let y = 0; y < boardYSize; y++) {
+      const value = board[toBoardCoordinate(x, y, boardXSize)];
+      if (boardValueHasSheep(value)) {
+        sheepAmount[boardValueToPlayerIndex(value)] += 1;
       }
     }
   }
@@ -255,58 +249,48 @@ export function getPlayersSheepTileAmount(
   return sheepAmount;
 }
 
-export function getWinner(board: Board, players: Player[]) {
-  const sheepAmounts = getPlayersSheepTileAmount(board, players.length);
+export function getWinner(
+  board: Board,
+  boardXSize: number,
+  boardYSize: number,
+): GameStateDynamic["info"]["winner"] {
+  const sheepAmounts = getPlayersSheepTileAmount(board, boardXSize, boardYSize);
 
-  // Find biggest value, and keep log of sheep amounts
-  const values: { [index: number]: number } = {};
-  let biggest = 0;
-  for (let l = 0; l < sheepAmounts.length; l++) {
-    const sheepAmount = sheepAmounts[l];
-    if (sheepAmount > biggest) {
-      biggest = sheepAmount;
-    }
-
-    if (sheepAmount in values) {
-      values[sheepAmount] += 1;
-    } else {
-      values[sheepAmount] = 1;
-    }
-  }
+  const isTie = sheepAmounts[0] === sheepAmounts[1];
+  const winner = sheepAmounts[0] > sheepAmounts[1] ? 0 : 1;
 
   // If threre are two occurrences of the biggest value, game is a tie, otherwise a single winner
-  return values[biggest] > 1
-    ? undefined
-    : players[sheepAmounts.indexOf(biggest)];
+  return isTie ? -1 : winner;
 }
 
-/**
- * Transform playerIndex and sheep amount (TileInfo) to boardValue
- * player 0, 16 sheep -> 016 -> 16
- * player 1, 5 sheep -> 105
- *
- * @param amount Amount of sheep
- * @param playerIndex The player index
- * @returns A new board value with the above info combined
- */
-export function toBoardNumber(amount: number, playerIndex: number): SheepBoard {
-  return playerIndex * 100 + amount;
+export function toBoardCoordinate(x: number, y: number, xSize: number) {
+  return y * xSize + x;
 }
 
-/**
- * Transform sheep value from (playerIndex)(sheep) to readable format
- * 016 -> player 0, 16 sheep
- * 105 -> player 1, 5 sheep
- *
- * @param value The board value read from the game board
- * @returns Object with playerIndex [-1, ...], and their sheep amount.
- */
-export function fromBoardNumber(value: number) {
-  const playerIndex = value > 0 ? Math.floor(value / 100) : -1;
-  const sheep = playerIndex >= 0 ? value - playerIndex * 100 : 0;
+export function fromBoardCoordinate(
+  boardCoord: BoardIndex,
+  xSize: number,
+): Coordinate {
+  const x = boardCoord % xSize;
+  const y = (boardCoord - x) / xSize;
+  return [x, y];
+}
 
-  return {
-    playerIndex,
-    sheep,
-  };
+export function boardValueHasSheep(value: BoardValue) {
+  return value > 1;
+}
+
+export function toBoardValue(
+  sheepAmount: Sheep,
+  playerIndex: Player,
+): BoardValue {
+  return sheepAmount + playerIndex * 16 + 1;
+}
+
+export function boardValueToSheepAmount(value: BoardValue): Sheep {
+  return ((value - 2) % 16) + 1;
+}
+
+export function boardValueToPlayerIndex(value: BoardValue): Player {
+  return Math.floor((value - 2) / 16);
 }

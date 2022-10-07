@@ -3,7 +3,7 @@
 The aim of this project is to create a web page where the user can play a
 somewhat-known
 [Battle Sheep](https://www.blueorangegames.com/index.php/games/battle-sheep)
-board game against AI, or watch AI play against eachother.
+board game against an AI.
 
 This is a project for
 [Tiralabra 2022 period 1](https://tiralabra.github.io/2022_p1/index) course at
@@ -25,9 +25,7 @@ My implementation will ignore the building-phase and will instead offer some
 ready-built boards to choose from, and possibly a sandbox where the user can
 build their own board to play on.
 
-My implementation will support 1-4 AI playing on the same board. However,
-depending on the performance of the algorithm this might be reduced to just 1-2
-AI.
+My implementation will support the player playing against 1 AI playing on the game board.
 
 ### Development
 
@@ -55,11 +53,10 @@ store the game board in a 2d array mapped to the hex grid with
 
 The actual state of a tile can be represented with an integer:
 
-- -1 means a missing tile in the map.
-- 0 means an empty tile in the map. (Tile with no sheep on it)
-- Player 1 sheep are mapped from 001-016. (Tile with 1-16 sheep, player 1)
-- Player 2 sheep are mapped from 101-116. (Tile with 1-16 sheep, player 2)
-- ...
+- 0 means a missing tile in the map.
+- 1 means an empty tile in the map. (Tile with no sheep on it)
+- Player 0 sheep are mapped from 2 to 17. (Tile with 1-16 sheep, player 0)
+- Player 1 sheep are mapped from 18 to 33. (Tile with 1-16 sheep, player 1)
 
 I need to implement a heuristic to evaluate a "value" for a given tile in a
 certain state of a game. **Implementation details are still unclear.**
@@ -73,8 +70,7 @@ The aim is for the algorithm to take less than a few seconds to compute the move
 for the AI. This is generally less than what it takes a human player to make
 their move, which makes the gameplay smooth and much more enjoyable. This time
 constraint is quite arbitrary ("a few seconds"), because the algorithm
-completion time could vary significantly based on the scale of the board, the
-amount of players, and the state of the game.
+completion time could vary significantly based on the scale of the board, and the state of the game.
 
 ### UI
 

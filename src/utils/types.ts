@@ -19,40 +19,38 @@ export type GameState = {
   dynamic: GameStateDynamic;
 };
 export type GameStateStatic = {
-  players: Player[];
   levelName: string;
-  startTiles: Level["startTiles"];
+  boardXSize: number;
+  boardYSize: number;
+  startTiles: BoardIndex[];
 };
 export type GameStateDynamic = {
   board: Board;
   info: GameInfo;
 };
+
+/**
+ * winner -1, means nobody won (tie)
+ */
 export type GameInfo = {
   selectingStart: boolean;
   gameEnded: boolean;
-  winner: Player | undefined;
+  winner: -1 | 0 | 1;
 };
 
-export type Player = {
-  name: string;
-  color: string;
-  human: boolean;
-};
+export type Board = number[];
+export type BoardIndex = number;
+export type BoardEvaluationPair = [number, Board];
+export type BoardValue = number;
 
-export type Coordinate = number[];
-export type Board = number[][];
+export type Coordinate = [number, number];
+export type Sheep = number;
+export type Player = number;
 
-export type BoardValuePair = [number, Board];
-
-export type SheepBoard = number;
-export type SheepReadable = {
-  sheep: number;
-  coord: Coordinate;
-  playerIndex: number;
-};
+export type MovableSheepTile = [Sheep, BoardIndex];
 
 export type MovePlot = {
-  from: Coordinate;
-  to: Coordinate;
-  maxSheep: number;
+  from: BoardIndex;
+  to: BoardIndex;
+  maxSheep: Sheep;
 };
