@@ -1,5 +1,5 @@
 import type { FormikProps } from "formik";
-import type { ConfigSchema } from "../utils/types";
+import type { ConfigSchema } from "../types";
 
 import {
   RadioGroup,
@@ -31,11 +31,17 @@ export function Config({ formik }: ConfigProps) {
             display="flex"
             flexDir="column"
           >
-            {Object.entries(levels).map(([key, value]) => (
-              <Radio key={key} value={key}>
-                {value.name}
-              </Radio>
-            ))}
+            {Object.entries(levels).map(([key, value]) => {
+              if (value.test) {
+                return;
+              }
+
+              return (
+                <Radio key={key} value={key}>
+                  {value.name}
+                </Radio>
+              );
+            })}
           </RadioGroup>
 
           <Button type="submit" mt="4">

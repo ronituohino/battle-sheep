@@ -7,8 +7,8 @@ import {
   getPlayersSheepTileAmount,
   boardValueToPlayerIndex,
   boardValueToSheepAmount,
-  toBoardCoordinate,
-} from "../../src/utils/game";
+  tbi,
+} from "../../src/game/game";
 import { describe, it, expect } from "vitest";
 import { levels } from "../../src/levels";
 
@@ -43,42 +43,37 @@ describe("game util", () => {
 
   it("can read possible moves from board", () => {
     let tiles = getPossibleMovesFromTile(testLevel.board, testLevel.sizeX, 0);
-    expect(tiles).toContainEqual(toBoardCoordinate(0, 3, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(3, 0, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(2, 2, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(0, 3, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(3, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(2, 2, testLevel.sizeX));
     expect(tiles).toHaveLength(3);
 
     // The coordinate we have selected shouldn't be in the results
     expect(tiles).not.toContainEqual(0);
 
     tiles = getPossibleMovesFromTile(testLevel.board, testLevel.sizeX, 3);
-    expect(tiles).toContainEqual(toBoardCoordinate(0, 0, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(3, 2, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(4, 1, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(0, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(3, 2, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(4, 1, testLevel.sizeX));
     expect(tiles).toHaveLength(3);
 
     tiles = getPossibleMovesFromTile(
       testLevel.board,
       testLevel.sizeX,
-      toBoardCoordinate(2, 1, testLevel.sizeX),
+      tbi(2, 1, testLevel.sizeX),
     );
-    expect(tiles).toContainEqual(toBoardCoordinate(1, 0, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(2, 0, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(4, 1, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(3, 2, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(2, 3, testLevel.sizeX));
-    expect(tiles).toContainEqual(toBoardCoordinate(0, 1, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(1, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(2, 0, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(4, 1, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(3, 2, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(2, 3, testLevel.sizeX));
+    expect(tiles).toContainEqual(tbi(0, 1, testLevel.sizeX));
     expect(tiles).toHaveLength(6);
   });
 
   it("can read all possible moves for a player", () => {
     let newBoard = setSheep(testLevel.board, 1, 16, 0);
-    newBoard = setSheep(
-      newBoard,
-      toBoardCoordinate(3, 2, testLevel.sizeX),
-      16,
-      1,
-    );
+    newBoard = setSheep(newBoard, tbi(3, 2, testLevel.sizeX), 16, 1);
 
     const allMoves = getPossibleMoves(
       newBoard,
@@ -89,25 +84,25 @@ describe("game util", () => {
 
     expect(allMoves).toHaveLength(4);
     expect(allMoves).toEqual([
-      { from: 1, to: toBoardCoordinate(1, 1, testLevel.sizeX), maxSheep: 15 },
-      { from: 1, to: toBoardCoordinate(3, 0, testLevel.sizeX), maxSheep: 15 },
-      { from: 1, to: toBoardCoordinate(2, 1, testLevel.sizeX), maxSheep: 15 },
-      { from: 1, to: toBoardCoordinate(0, 0, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: tbi(1, 1, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: tbi(3, 0, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: tbi(2, 1, testLevel.sizeX), maxSheep: 15 },
+      { from: 1, to: tbi(0, 0, testLevel.sizeX), maxSheep: 15 },
     ]);
   });
 
   it("can set sheep", () => {
-    let index = toBoardCoordinate(0, 1, testLevel.sizeX);
+    let index = tbi(0, 1, testLevel.sizeX);
     let newBoard = setSheep(testLevel.board, index, 16, 0);
     expect(newBoard[index]).toEqual(17);
 
-    index = toBoardCoordinate(1, 0, testLevel.sizeX);
+    index = tbi(1, 0, testLevel.sizeX);
     newBoard = setSheep(testLevel.board, index, 10, 1);
     expect(newBoard[index]).toEqual(27);
   });
 
   it("can move sheep", () => {
-    const index = toBoardCoordinate(0, 1, testLevel.sizeX);
+    const index = tbi(0, 1, testLevel.sizeX);
     let boardWithSheep = setSheep(testLevel.board, index, 16, 0);
 
     const secondIndex = 0;
@@ -116,7 +111,7 @@ describe("game util", () => {
     expect(boardWithSheep[secondIndex]).toEqual(7);
     expect(boardWithSheep).not.toContainEqual(17);
 
-    const thirdIndex = toBoardCoordinate(0, 3, testLevel.sizeX);
+    const thirdIndex = tbi(0, 3, testLevel.sizeX);
     boardWithSheep = moveSheep(boardWithSheep, index, thirdIndex, 1, 0);
     expect(boardWithSheep[index]).toEqual(10);
     expect(boardWithSheep[thirdIndex]).toEqual(2);

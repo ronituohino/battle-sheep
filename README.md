@@ -31,18 +31,7 @@ Install Node:
 
 #### Linux
 
-Install nvm:
-
-```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-```
-
-Close the terminal and start it up again.
-Install Node:
-
-```
-nvm install --lts
-```
+Install [nvm](https://github.com/nvm-sh/nvm) using the installation instructions.
 
 #### Windows
 

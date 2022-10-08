@@ -2,7 +2,7 @@
  * @file Most TypeScript types are defined here. Exceptions are React component prop types.
  */
 
-import { levels } from "../levels";
+import { levels } from "./levels";
 
 export type AppState = "config" | "game";
 
@@ -22,7 +22,6 @@ export type GameStateStatic = {
   levelName: string;
   boardXSize: number;
   boardYSize: number;
-  startTiles: BoardIndex[];
 };
 export type GameStateDynamic = {
   board: Board;
@@ -33,6 +32,7 @@ export type GameStateDynamic = {
  * winner -1, means nobody won (tie)
  */
 export type GameInfo = {
+  startTiles: BoardIndex[];
   selectingStart: boolean;
   gameEnded: boolean;
   winner: -1 | 0 | 1;

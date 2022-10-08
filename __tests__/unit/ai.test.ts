@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { simulate } from "../../src/utils/ai";
+import { simulate } from "../../src/game/ai";
 import { levels } from "../../src/levels";
 
 describe("ai", () => {
@@ -36,8 +36,7 @@ describe("ai", () => {
 
   it("does it get stuck?", () => {
     const situation = [
-      18, 1, 19, 18, 0, 0, 3, 1, 2, 1, 5, 0, 1, 0, 3, 1, 20, 0, 7, 1, 2, 0, 0,
-      26,
+      1, 1, 1, 1, 0, 0, 6, 1, 1, 1, 4, 0, 26, 0, 1, 1, 9, 0, 24, 1, 1, 0, 0, 1,
     ];
     const result = simulate(situation, 6, 4);
 

@@ -6,8 +6,7 @@ import {
   Board,
   GameStateStatic,
   GameInfo,
-  GameStateDynamic,
-} from "../utils/types";
+} from "../types";
 import { Button, Heading, Flex, Box } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -20,9 +19,9 @@ import {
   getWinner,
   boardValueToPlayerIndex,
   boardValueToSheepAmount,
-  fromBoardCoordinate,
-} from "../utils/game";
-import { simulate } from "../utils/ai";
+  fbi,
+} from "../game/game";
+import { simulate } from "../game/ai";
 
 import { Tile } from "../components/Tile";
 import { MoveSheepModal } from "../components/MoveSheepModal";
@@ -83,7 +82,18 @@ export function Game({ setAppState, config }: GameProps) {
         // Selecting starting tile
         setBoard(setSheep(board, index, 16, 0));
 
+        // Remove the selected startTile so that AI can't overwrite it
+        const newStartTiles = info.startTiles.filter(
+          (value) => value !== index,
+        );
+        setInfo({
+          gameEnded: false,
+          selectingStart: true,
+          startTiles: newStartTiles,
+          winner: -1,
+        });
         setHighlightedHexes(undefined);
+
         setFinished(true);
       } else if (selectedHex !== undefined) {
         // Check if there are sheep to move
@@ -93,7 +103,7 @@ export function Game({ setAppState, config }: GameProps) {
         setMove({
           from: selectedHex,
           to: index,
-          maxSheep: boardValueToSheepAmount(value),
+          maxSheep: boardValueToSheepAmount(value) - 1,
         });
       }
       return;
@@ -123,55 +133,59 @@ export function Game({ setAppState, config }: GameProps) {
 
   // Called after the human player ends their turn
   useEffect(() => {
-    function nextAiTurn(
-      board: Board,
-      boardXSize: number,
-      boardYSize: number,
-      selectingStart: GameStateDynamic["info"]["selectingStart"],
-      startTiles: GameStateStatic["startTiles"],
-    ) {
-      const [newBoard, moved] = simulate(
-        board,
-        boardXSize,
-        boardYSize,
+    if (!finished || !initDone) {
+      return;
+    }
+
+    let aiDone = false;
+    let selectingStart = info.selectingStart;
+    let newBoard = board;
+
+    while (!aiDone) {
+      const situation = simulate(
+        newBoard,
+        gameStatic.boardXSize,
+        gameStatic.boardYSize,
         selectingStart,
-        startTiles,
+        info.startTiles,
       );
+      selectingStart = false;
+      newBoard = situation[0];
 
       // If player can't make any move
-      if (getPossibleMoves(newBoard, boardXSize, boardYSize, 0).length === 0) {
+      if (
+        getPossibleMoves(
+          newBoard,
+          gameStatic.boardXSize,
+          gameStatic.boardYSize,
+          0,
+        ).length === 0
+      ) {
         // And AI can't move
-        if (!moved) {
+        if (!situation[1]) {
           // End game
-          const winner = getWinner(board, boardXSize, boardYSize);
-
-          setInfo({ gameEnded: true, selectingStart: false, winner });
-          setBoard(newBoard);
-        } else {
-          nextAiTurn(
-            newBoard,
-            boardXSize,
-            boardYSize,
-            selectingStart,
-            startTiles,
-          );
+          const winner = getWinner(newBoard);
+          setInfo({
+            startTiles: [],
+            gameEnded: true,
+            selectingStart: false,
+            winner,
+          });
+          aiDone = true;
         }
       } else {
-        setInfo({ gameEnded: false, selectingStart: false, winner: -1 });
-        setBoard(newBoard);
+        setInfo({
+          startTiles: [],
+          gameEnded: false,
+          selectingStart: false,
+          winner: -1,
+        });
+        aiDone = true;
       }
     }
 
-    if (finished && initDone) {
-      nextAiTurn(
-        board,
-        gameStatic.boardXSize,
-        gameStatic.boardYSize,
-        info.selectingStart,
-        gameStatic.startTiles,
-      );
-      setFinished(false);
-    }
+    setBoard(newBoard);
+    setFinished(false);
   }, [finished]);
 
   // Initialize game
@@ -181,45 +195,8 @@ export function Game({ setAppState, config }: GameProps) {
     setBoard(game.dynamic.board);
     setInfo(game.dynamic.info);
 
-    setHighlightedHexes(game.static.startTiles);
+    setHighlightedHexes(game.dynamic.info.startTiles);
   }, []);
-
-  // Game board rendering
-  const tiles: JSX.Element[] = [];
-
-  if (initDone) {
-    board?.forEach((value, index) => {
-      // 0 means missing tile in map
-      if (value === 0) {
-        return 0;
-      }
-
-      const highlighted = highlightedHexes
-        ? highlightedHexes.includes(index)
-        : false;
-      const selected = selectedHex === index;
-
-      const player = boardValueToPlayerIndex(value);
-      const sheep = boardValueToSheepAmount(value);
-
-      const isPlayerSheep = player === 0;
-      const [x, y] = fromBoardCoordinate(index, gameStatic?.boardXSize);
-
-      tiles.push(
-        <Tile
-          key={`${value}-${index}`}
-          x={x}
-          y={y}
-          sheep={sheep}
-          color={player === -1 ? "white" : ["#f15bb5", "#fee440"][player]}
-          highlighted={highlighted}
-          selected={selected}
-          clickable={highlighted || (sheep > 1 && isPlayerSheep)}
-          click={() => handleTileClick(index, highlighted, selected)}
-        />,
-      );
-    });
-  }
 
   return (
     <Box>
@@ -233,7 +210,39 @@ export function Game({ setAppState, config }: GameProps) {
       {initDone && (
         <>
           <Box position="relative" left="50%">
-            {tiles}
+            {board.map((value, index) => {
+              // 0 means missing tile in map
+              if (value === 0) {
+                return;
+              }
+
+              const highlighted = highlightedHexes
+                ? highlightedHexes.includes(index)
+                : false;
+              const selected = selectedHex === index;
+
+              const player = boardValueToPlayerIndex(value);
+              const sheep = boardValueToSheepAmount(value);
+
+              const isPlayerSheep = player === 0;
+              const [x, y] = fbi(index, gameStatic?.boardXSize);
+
+              return (
+                <Tile
+                  key={`${value}-${index}`}
+                  x={x}
+                  y={y}
+                  sheep={sheep}
+                  color={
+                    player === -1 ? "white" : ["#f15bb5", "#fee440"][player]
+                  }
+                  highlighted={highlighted}
+                  selected={selected}
+                  clickable={highlighted || (sheep > 1 && isPlayerSheep)}
+                  click={() => handleTileClick(index, highlighted, selected)}
+                />
+              );
+            })}
           </Box>
           <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
           <EndGame

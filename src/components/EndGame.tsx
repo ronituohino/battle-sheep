@@ -1,5 +1,5 @@
 import { Button, Text } from "@chakra-ui/react";
-import { AppState, Player } from "../utils/types";
+import { AppState, Player } from "../types";
 
 export type EndGameProps = {
   gameEnded: boolean;

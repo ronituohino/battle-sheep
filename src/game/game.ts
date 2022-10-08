@@ -14,10 +14,10 @@ import type {
   MovableSheepTile,
   BoardValue,
   Coordinate,
-} from "./types";
+} from "../types";
 import { levels } from "../levels";
 
-import { copy } from "./copy";
+import { copy } from "../utils/copy";
 
 /**
  * Initializes the game:
@@ -36,11 +36,11 @@ export function initializeGame(config: ConfigSchema): GameState {
       levelName: level.name,
       boardXSize: level.sizeX,
       boardYSize: level.sizeY,
-      startTiles: level.startTiles,
     },
     dynamic: {
       board: level.board,
       info: {
+        startTiles: level.startTiles,
         selectingStart: true,
         gameEnded: false,
         winner: -1,
@@ -49,18 +49,11 @@ export function initializeGame(config: ConfigSchema): GameState {
   };
 }
 
-/**
- *  Return tiles that are on the edge of the board
- *  This isn't as straightforward as I thought lol, gonna do this manually per map for now
- *
- *  export function getBoardEdges(board: Board): [[number, number]] {}
- * */
-
-export const movement = {
-  northEast: [0, 1],
+const movement = {
+  north: [0, 1],
   east: [1, 0],
   southEast: [1, 1],
-  southWest: [0, -1],
+  south: [0, -1],
   west: [-1, 0],
   northWest: [-1, -1],
 };
@@ -127,7 +120,7 @@ export function getMovableSheepFromPlayer(
   const movableSheepTiles = [] as MovableSheepTile[];
   for (let x = 0; x < boardXSize; x++) {
     for (let y = 0; y < boardYSize; y++) {
-      const boardIndex = toBoardCoordinate(x, y, boardXSize);
+      const boardIndex = tbi(x, y, boardXSize);
       const value = board[boardIndex];
       if (boardValueHasSheep(value)) {
         const player = boardValueToPlayerIndex(value);
@@ -228,31 +221,27 @@ export function setSheep(
  *
  * @param board Game board
  */
-export function getPlayersSheepTileAmount(
-  board: Board,
-  boardXSize: number,
-  boardYSize: number,
-): [Sheep, Sheep] {
-  const sheepAmount: [Sheep, Sheep] = [0, 0];
+export function getPlayersSheepTileAmount(board: Board): [Sheep, Sheep] {
+  let playerSheep = 0;
+  let aiSheep = 0;
 
-  for (let x = 0; x < boardXSize; x++) {
-    for (let y = 0; y < boardYSize; y++) {
-      const value = board[toBoardCoordinate(x, y, boardXSize)];
-      if (boardValueHasSheep(value)) {
-        sheepAmount[boardValueToPlayerIndex(value)] += 1;
+  for (let i = 0; i < board.length; i++) {
+    const value = board[i];
+    if (boardValueHasSheep(value)) {
+      const player = boardValueToPlayerIndex(value);
+      if (player === 0) {
+        playerSheep++;
+      } else {
+        aiSheep++;
       }
     }
   }
 
-  return sheepAmount;
+  return [playerSheep, aiSheep];
 }
 
-export function getWinner(
-  board: Board,
-  boardXSize: number,
-  boardYSize: number,
-): GameStateDynamic["info"]["winner"] {
-  const sheepAmounts = getPlayersSheepTileAmount(board, boardXSize, boardYSize);
+export function getWinner(board: Board): GameStateDynamic["info"]["winner"] {
+  const sheepAmounts = getPlayersSheepTileAmount(board);
 
   const isTie = sheepAmounts[0] === sheepAmounts[1];
   const winner = sheepAmounts[0] > sheepAmounts[1] ? 0 : 1;
@@ -261,14 +250,11 @@ export function getWinner(
   return isTie ? -1 : winner;
 }
 
-export function toBoardCoordinate(x: number, y: number, xSize: number) {
+export function tbi(x: number, y: number, xSize: number) {
   return y * xSize + x;
 }
 
-export function fromBoardCoordinate(
-  boardCoord: BoardIndex,
-  xSize: number,
-): Coordinate {
+export function fbi(boardCoord: BoardIndex, xSize: number): Coordinate {
   const x = boardCoord % xSize;
   const y = (boardCoord - x) / xSize;
   return [x, y];

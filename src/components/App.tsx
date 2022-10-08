@@ -1,4 +1,4 @@
-import type { AppState, ConfigSchema } from "../utils/types";
+import type { AppState, ConfigSchema } from "../types";
 
 import { useFormik } from "formik";
 import { useState } from "react";
@@ -11,7 +11,7 @@ export function App() {
   const [appState, setAppState] = useState<AppState>("config");
 
   const initialValues: ConfigSchema = {
-    levelKey: "test",
+    levelKey: "first",
   };
   const formik = useFormik({
     initialValues,

@@ -9,7 +9,7 @@ export type TileProps = {
   click: () => void;
 };
 
-export const Tile = ({
+export function Tile({
   x,
   y,
   sheep,
@@ -18,7 +18,7 @@ export const Tile = ({
   selected,
   clickable,
   click,
-}: TileProps) => {
+}: TileProps) {
   let properties = {
     stroke: "black",
     strokeWidth: 5,
@@ -80,4 +80,4 @@ export const Tile = ({
       </g>
     </svg>
   );
-};
+}

@@ -9,17 +9,16 @@ import {
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
-  toBoardCoordinate,
-  fromBoardCoordinate,
+  tbi,
+  fbi,
 } from "./game";
-import { getRandomInt } from "./random";
+import { getRandomInt } from "../utils/random";
 import {
   Board,
   BoardEvaluationPair,
   BoardIndex,
   GameStateDynamic,
-  GameStateStatic,
-} from "./types";
+} from "../types";
 
 const GOOD = 100000;
 const BAD = -100000;
@@ -37,13 +36,13 @@ export function simulate(
   boardXSize: number,
   boardYSize: number,
   selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
-  startTiles: GameStateStatic["startTiles"] = [],
+  startTiles: GameStateDynamic["info"]["startTiles"] = [],
 ): [Board, boolean] {
   let moved = false;
   let newBoard;
 
   if (selectingStart && startTiles !== undefined) {
-    newBoard = setSheep(board, AI_selectStart(startTiles), 16, 1);
+    newBoard = setSheep(board, selectStart(startTiles), 16, 1);
   } else {
     newBoard = alphabeta(
       board,
@@ -69,7 +68,7 @@ export function simulate(
  * In the first turn of the game, choose a starting point.
  * @todo Implement heuristic
  */
-function AI_selectStart(startTiles: BoardIndex[]): BoardIndex {
+function selectStart(startTiles: BoardIndex[]): BoardIndex {
   return startTiles[getRandomInt(startTiles.length)];
 }
 
@@ -107,9 +106,11 @@ export function alphabeta(
   if (possibleMoves.length === 0) {
     if (maximizing) {
       // If this is the handled AI, bad move (drove itself out of moves)
-      return [BAD - depth, board];
+      // + depth, to prioritize late losses
+      return [BAD + depth, board];
     } else {
       // If this is another player, really good (no moves for the other player)
+      // + depth, to prioritize early wins
       return [GOOD + depth, board];
     }
   }
@@ -131,9 +132,9 @@ export function alphabeta(
      * e.g. maxSheep: 8 -> 4-5-3-6-2-7-1
      * e.g. maxSheep: 7 -> 3-4-2-5-1-6
      */
-    let s = Math.floor(move.maxSheep / 2);
+    let s = move.maxSheep === 1 ? 1 : Math.floor(move.maxSheep / 2);
     let i = 1;
-    while (s > 0 && s < move.maxSheep) {
+    while (s > 0 && s <= move.maxSheep) {
       const newBoard = moveSheep(board, move.from, move.to, s, currentPlayer);
 
       if (maximizing) {
@@ -150,6 +151,8 @@ export function alphabeta(
         if (res[0] > value[0]) {
           value = [res[0], newBoard];
         }
+
+        // beta cutoff
         if (value[0] >= b) {
           break;
         }
@@ -168,6 +171,8 @@ export function alphabeta(
         if (res[0] < value[0]) {
           value = [res[0], newBoard];
         }
+
+        // alpha cutoff
         if (value[0] <= a) {
           break;
         }
@@ -188,10 +193,7 @@ export function alphabeta(
 }
 
 function nextPlayerIndex(index: number) {
-  if (index === 0) {
-    return 1;
-  }
-  return 0;
+  return index === 0 ? 1 : 0;
 }
 
 /**
@@ -215,7 +217,7 @@ export function evaluate(
   // Iterate over all tiles
   for (let x = 0; x < boardXSize; x++) {
     for (let y = 0; y < boardYSize; y++) {
-      const boardCoord = toBoardCoordinate(x, y, boardXSize);
+      const boardCoord = tbi(x, y, boardXSize);
       const boardValue = board[boardCoord];
 
       // Tile itself has a value of 1
@@ -231,7 +233,7 @@ export function evaluate(
       const moves = getPossibleMovesFromTile(board, boardXSize, boardCoord);
       if (moves) {
         for (let i = 0; i < moves.length; i++) {
-          const targetCoord = fromBoardCoordinate(moves[i], boardXSize);
+          const targetCoord = fbi(moves[i], boardXSize);
 
           const diffX = Math.abs(x - targetCoord[0]);
           const diffY = Math.abs(y - targetCoord[1]);

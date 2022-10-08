@@ -1,4 +1,4 @@
-import type { MovePlot } from "../utils/types";
+import type { MovePlot } from "../types";
 
 import { useState } from "react";
 
