@@ -31,10 +31,10 @@ describe("ai", () => {
   it("simulate 3 turns for ai", () => {
     console.time("3 moves for ai");
 
-    let board: [Board, boolean] = [[], false];
+    let board: [Board, boolean] = [levels.testStarted.board, false];
     for (let i = 0; i < 3; i++) {
       board = simulate(
-        levels.testStarted.board,
+        board[0],
         levels.testStarted.sizeX,
         levels.testStarted.sizeY,
       );

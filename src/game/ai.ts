@@ -9,7 +9,6 @@ import {
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
-  tbi,
   fbi,
 } from "./game";
 import { getRandomInt } from "../utils/random";
@@ -18,6 +17,7 @@ import {
   BoardEvaluationPair,
   BoardIndex,
   GameStateDynamic,
+  MovePlot,
 } from "../types";
 
 const GOOD = 100000;
@@ -48,11 +48,12 @@ export function simulate(
       board,
       boardXSize,
       boardYSize,
-      4,
+      5,
       BAD,
       GOOD,
       1,
       true,
+      getPossibleMoves(board, boardXSize, boardYSize, 1),
     )[1];
   }
 
@@ -93,15 +94,8 @@ export function alphabeta(
   b: number,
   currentPlayer: number,
   maximizing: boolean,
+  possibleMoves: MovePlot[],
 ): BoardEvaluationPair {
-  // Find all possible move origin-target pairs
-  const possibleMoves = getPossibleMoves(
-    board,
-    boardXSize,
-    boardYSize,
-    currentPlayer,
-  );
-
   // Win/Lose check, add depth to values to prioritise early wins
   if (possibleMoves.length === 0) {
     if (maximizing) {
@@ -117,7 +111,8 @@ export function alphabeta(
 
   // If no win/lose, and on bottom depth, use heuristic to evaluate sitation
   if (depth === 0) {
-    return [evaluate(board, boardXSize, boardYSize), board];
+    const evaluation = evaluate(board, boardXSize);
+    return [evaluation, board];
   }
 
   let value: BoardEvaluationPair = [maximizing ? BAD : GOOD, board];
@@ -136,6 +131,13 @@ export function alphabeta(
     let i = 1;
     while (s > 0 && s <= move.maxSheep) {
       const newBoard = moveSheep(board, move.from, move.to, s, currentPlayer);
+      const nextPlayer = nextPlayerIndex(currentPlayer);
+      const nextMoves = getPossibleMoves(
+        newBoard,
+        boardXSize,
+        boardYSize,
+        nextPlayer,
+      );
 
       if (maximizing) {
         const res = alphabeta(
@@ -145,8 +147,9 @@ export function alphabeta(
           depth - 1,
           a,
           b,
-          nextPlayerIndex(currentPlayer),
+          nextPlayer,
           false,
+          nextMoves,
         );
         if (res[0] > value[0]) {
           value = [res[0], newBoard];
@@ -165,8 +168,9 @@ export function alphabeta(
           depth - 1,
           a,
           b,
-          nextPlayerIndex(currentPlayer),
+          nextPlayer,
           true,
+          nextMoves,
         );
         if (res[0] < value[0]) {
           value = [res[0], newBoard];
@@ -207,61 +211,56 @@ function nextPlayerIndex(index: number) {
  * @param board Game board
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
-export function evaluate(
-  board: Board,
-  boardXSize: number,
-  boardYSize: number,
-): number {
+export function evaluate(board: Board, boardXSize: number): number {
   let advantage = 0;
 
   // Iterate over all tiles
-  for (let x = 0; x < boardXSize; x++) {
-    for (let y = 0; y < boardYSize; y++) {
-      const boardCoord = tbi(x, y, boardXSize);
-      const boardValue = board[boardCoord];
+  for (let i = 0; i < board.length; i++) {
+    const boardValue = board[i];
 
-      // Tile itself has a value of 1
-      let value = 1;
-      const sheep = boardValueToSheepAmount(boardValue);
+    // An empty tile
+    if (boardValue < 2) {
+      continue;
+    }
 
-      // An empty tile
-      if (sheep > 0) {
-        continue;
-      }
+    // Tile itself has a value of 1
+    let value = 1;
 
-      // Free space in all directions of tile
-      const moves = getPossibleMovesFromTile(board, boardXSize, boardCoord);
-      if (moves) {
-        for (let i = 0; i < moves.length; i++) {
-          const targetCoord = fbi(moves[i], boardXSize);
+    // Free space in all directions of tile
+    const moves = getPossibleMovesFromTile(board, boardXSize, i);
 
-          const diffX = Math.abs(x - targetCoord[0]);
-          const diffY = Math.abs(y - targetCoord[1]);
+    if (moves) {
+      const [x, y] = fbi(i, boardXSize);
+      for (let m = 0; m < moves.length; m++) {
+        const targetCoord = fbi(moves[m], boardXSize);
 
-          if (diffX > 0) {
-            value += diffX;
-          } else {
-            value += diffY;
-          }
+        const diffX = Math.abs(x - targetCoord[0]);
+        const diffY = Math.abs(y - targetCoord[1]);
+
+        if (diffX > 0) {
+          value += diffX;
+        } else {
+          value += diffY;
         }
       }
+    }
 
-      // Excess sheep reduction, harsh reduction
-      if (sheep > value) {
-        value -= sheep * 3;
-      } else {
-        // If sheep are within bounds, add value
-        value += sheep;
-      }
+    const sheep = boardValueToSheepAmount(boardValue);
 
-      const player = boardValueToPlayerIndex(boardValue);
-      if (player === 1) {
-        advantage += value;
-      } else {
-        advantage -= value;
-      }
+    // Excess sheep reduction, harsh reduction
+    if (sheep > value) {
+      value -= sheep * 3;
+    } else {
+      // If sheep are within bounds, add value
+      value += sheep;
+    }
+
+    const player = boardValueToPlayerIndex(boardValue);
+    if (player === 1) {
+      advantage += value;
+    } else {
+      advantage -= value;
     }
   }
-
   return advantage;
 }
