@@ -66,27 +66,32 @@ const movement = [
 export function getPossibleMovesFromTile(
   board: Board,
   boardXSize: number,
+  boardYSize: number,
   selectedTile: BoardIndex,
 ): BoardIndex[] {
   const boundaries: BoardIndex[] = [];
 
   // Select movement direction
   for (let i = 0; i < 6; i++) {
+    let [x, y] = fbi(selectedTile, boardXSize);
     const [moveX, moveY] = movement[i];
-    let boundaryFound = false;
 
+    let boundaryFound = false;
     let previousIndex = selectedTile;
-    let selectedIndex = selectedTile;
 
     // Move there until we hit a missing (0) tile or a sheep (> 1)
     while (!boundaryFound) {
-      previousIndex = selectedIndex;
-      selectedIndex += moveX + moveY * boardXSize;
+      x += moveX;
+      y += moveY;
+
+      const index = tbi(x, y, boardXSize);
 
       if (
-        selectedIndex < 0 ||
-        selectedIndex > board.length ||
-        board[selectedIndex] !== 1
+        x < 0 ||
+        y < 0 ||
+        x > boardXSize ||
+        y > boardYSize ||
+        board[index] !== 1
       ) {
         boundaryFound = true;
         // Don't add the currently selected tile to the boundaries
@@ -94,6 +99,8 @@ export function getPossibleMovesFromTile(
           boundaries.push(previousIndex);
         }
       }
+
+      previousIndex = index;
     }
   }
 
@@ -135,6 +142,7 @@ export function getTilesMoreThanOneSheepFromPlayer(
 export function getPossibleMoveTargets(
   board: Board,
   boardXSize: number,
+  boardYSize: number,
   playerIndex: Player,
 ) {
   const moves: MoveTarget[] = [];
@@ -145,7 +153,12 @@ export function getPossibleMoveTargets(
   for (let s = 0; s < movableSheepTiles.length; s++) {
     const [sheep, index] = movableSheepTiles[s];
 
-    const possibleMoves = getPossibleMovesFromTile(board, boardXSize, index);
+    const possibleMoves = getPossibleMovesFromTile(
+      board,
+      boardXSize,
+      boardYSize,
+      index,
+    );
 
     for (let m = 0; m < possibleMoves.length; m++) {
       moves.push({

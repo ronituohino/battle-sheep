@@ -1,6 +1,6 @@
 # Week 4
 
-**Project hours this week: 4**
+**Project hours this week: 10**
 
 I started off with reviewing the AI code to find some obvious places to improve on. I cut down my performance eval time quite a bit.
 I studied if simply storing evaluated board states in a hash map would improve performance:
@@ -14,7 +14,7 @@ I reorganized how the moves are handled in alphabeta. Now the iteration is reall
 - Take first possible move, around half max sheep -1, compute
 - ...
 
-This method made alpha-beta pruning take over really quickly and I got down to depth=6 in the web version.
+This method made alpha-beta pruning take over really quickly and I got down to depth=6 in the web version. Going to keep it at depth=5, to minimize latency in the web browser.
 
 I tried to use hash tables to reorganize the moves list, but I feel like I'm either doing it wrong, or the gains are too small.
 
@@ -32,6 +32,8 @@ I managed to optimize the AI quite a bit with a new move organizing algorithm.
 
 ### Next up
 
-More unit tests on some specific functions in game/ai.
-Update documentation.
+More levels for unit and performance testing.
+More unit tests on some obvious cases in ai.
+More performance tests on different levels.
+
 Clean the UI.

@@ -51,7 +51,7 @@ export function simulate(
     );
   } else {
     // The moves after start are found using minimax + alpha-beta
-    newBoard = alphabeta(board, boardXSize, boardYSize, 6, BAD, GOOD, true)[1];
+    newBoard = alphabeta(board, boardXSize, boardYSize, 5, BAD, GOOD, true)[1];
   }
 
   // if AI couldn't move, newBoard has same reference as board
@@ -75,7 +75,7 @@ export function simulate(
  *
  * @returns Advantage value and new board
  */
-export function alphabeta(
+function alphabeta(
   board: Board,
   boardXSize: number,
   boardYSize: number,
@@ -85,7 +85,12 @@ export function alphabeta(
   maximizing: boolean,
 ): BoardEvaluationPair {
   const currentPlayer = maximizing ? 1 : 0;
-  const moveTargets = getPossibleMoveTargets(board, boardXSize, currentPlayer);
+  const moveTargets = getPossibleMoveTargets(
+    board,
+    boardXSize,
+    boardYSize,
+    currentPlayer,
+  );
 
   // Win/Lose check, add depth to values to prioritise early wins
   if (moveTargets.length === 0) {
@@ -102,7 +107,7 @@ export function alphabeta(
 
   // If no win/lose, and on bottom depth, use heuristic to evaluate sitation
   if (depth === 0) {
-    const evaluation = evaluate(board, boardXSize);
+    const evaluation = evaluate(board, boardXSize, boardYSize);
     return [evaluation, board];
   }
 
@@ -255,7 +260,11 @@ export function alphabeta(
  * @param boardXSize Game board horizontal size
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
-export function evaluate(board: Board, boardXSize: number): number {
+function evaluate(
+  board: Board,
+  boardXSize: number,
+  boardYSize: number,
+): number {
   let advantage = 0;
 
   // Iterate over all tiles
@@ -271,7 +280,7 @@ export function evaluate(board: Board, boardXSize: number): number {
     let value = 1;
 
     // Free space in all directions of tile
-    const moves = getPossibleMovesFromTile(board, boardXSize, i);
+    const moves = getPossibleMovesFromTile(board, boardXSize, boardYSize, i);
 
     if (moves) {
       const [x, y] = fbi(i, boardXSize);

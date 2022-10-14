@@ -120,6 +120,7 @@ export function Game({ setAppState, config }: GameProps) {
       const moves = getPossibleMovesFromTile(
         board,
         gameStatic.boardXSize,
+        gameStatic.boardYSize,
         index,
       );
       setHighlightedHexes(moves);
@@ -154,7 +155,12 @@ export function Game({ setAppState, config }: GameProps) {
 
       // If player can't make any move
       if (
-        getPossibleMoveTargets(newBoard, gameStatic.boardXSize, 0).length === 0
+        getPossibleMoveTargets(
+          newBoard,
+          gameStatic.boardXSize,
+          gameStatic.boardYSize,
+          0,
+        ).length === 0
       ) {
         // And AI can't move
         if (!situation[1]) {

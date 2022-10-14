@@ -11,7 +11,7 @@ export function App() {
   const [appState, setAppState] = useState<AppState>("config");
 
   const initialValues: ConfigSchema = {
-    levelKey: "first",
+    levelKey: "mixed",
   };
   const formik = useFormik({
     initialValues,

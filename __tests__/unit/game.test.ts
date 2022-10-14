@@ -44,6 +44,7 @@ describe("game util", () => {
     let tiles = getPossibleMovesFromTile(
       levels.test.board,
       levels.test.sizeX,
+      levels.test.sizeY,
       0,
     );
     expect(tiles).toContainEqual(tbi(0, 3, levels.test.sizeX));
@@ -54,7 +55,12 @@ describe("game util", () => {
     // The coordinate we have selected shouldn't be in the results
     expect(tiles).not.toContainEqual(0);
 
-    tiles = getPossibleMovesFromTile(levels.test.board, levels.test.sizeX, 3);
+    tiles = getPossibleMovesFromTile(
+      levels.test.board,
+      levels.test.sizeX,
+      levels.test.sizeY,
+      3,
+    );
     expect(tiles).toContainEqual(tbi(0, 0, levels.test.sizeX));
     expect(tiles).toContainEqual(tbi(3, 2, levels.test.sizeX));
     expect(tiles).toContainEqual(tbi(4, 1, levels.test.sizeX));
@@ -63,6 +69,7 @@ describe("game util", () => {
     tiles = getPossibleMovesFromTile(
       levels.test.board,
       levels.test.sizeX,
+      levels.test.sizeY,
       tbi(2, 1, levels.test.sizeX),
     );
     expect(tiles).toContainEqual(tbi(1, 0, levels.test.sizeX));
@@ -78,7 +85,12 @@ describe("game util", () => {
     let newBoard = setSheep(levels.test.board, 1, 16, 0);
     newBoard = setSheep(newBoard, tbi(3, 2, levels.test.sizeX), 16, 1);
 
-    const allMoves = getPossibleMoveTargets(newBoard, levels.test.sizeX, 0);
+    const allMoves = getPossibleMoveTargets(
+      newBoard,
+      levels.test.sizeX,
+      levels.test.sizeY,
+      0,
+    );
 
     expect(allMoves).toHaveLength(4);
     expect(allMoves).toEqual([
