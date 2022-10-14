@@ -28,7 +28,7 @@ describe("ai", () => {
     simulate(start[0], levels.test.sizeX, levels.test.sizeY);
     console.timeEnd("first move");
   });
-  it("simulate 3 turns for ai", () => {
+  it("simulate first 3 move turns for ai", () => {
     console.time("3 moves for ai");
 
     let board: [Board, boolean] = [levels.testStarted.board, false];

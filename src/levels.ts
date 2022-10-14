@@ -1,6 +1,7 @@
 /**
  * @file Level objects for the game.
  */
+
 export const levels = {
   first: {
     name: "First level",

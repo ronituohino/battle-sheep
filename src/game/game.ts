@@ -20,9 +20,7 @@ import { levels } from "../levels";
 import { copy } from "../utils/copy";
 
 /**
- * Initializes the game:
- *   Creates players.
- *   Copies level object from levels.ts.
+ * Initializes the game.
  *
  * @param config The game configuration
  * @returns An object with game information
@@ -60,6 +58,10 @@ const movement = [
 
 /**
  * Get tiles to which sheep can move to from given tile
+ *
+ * @param board The game board
+ * @param boardXSize The horizontal size of the game board
+ * @param selectedTile The index which we want the moves to be looked from
  * */
 export function getPossibleMovesFromTile(
   board: Board,
@@ -99,7 +101,7 @@ export function getPossibleMovesFromTile(
 }
 
 /**
- * Get all sheep from a player
+ * Get all sheep from a player.
  *
  * @param board Game board
  * @param playerIndex Player whose sheep are searched
@@ -112,7 +114,7 @@ export function getTilesMoreThanOneSheepFromPlayer(
   const movableSheepTiles = [] as MovableSheepTile[];
   for (let i = 0; i < board.length; i++) {
     const value = board[i];
-    if (boardValueHasSheep(value)) {
+    if (value > 1) {
       const player = boardValueToPlayerIndex(value);
       const sheep = boardValueToSheepAmount(value);
 
@@ -126,14 +128,13 @@ export function getTilesMoreThanOneSheepFromPlayer(
 
 /**
  * @param board Game board
+ * @param boardXSize The game board horizontal size
  * @param playerIndex Player
- *
  * @returns Array of all possible moves for given player
  */
 export function getPossibleMoveTargets(
   board: Board,
   boardXSize: number,
-  boardYSize: number,
   playerIndex: Player,
 ) {
   const moves: MoveTarget[] = [];
@@ -161,24 +162,24 @@ export function getPossibleMoveTargets(
  * Moves sheep from one tile to another and returns new board
  *
  * @param board Game board
- * @param from The coordinate where to move the sheep from
- * @param to The coordinate where to move the sheep to
+ * @param fromIndex The coordinate where to move the sheep from
+ * @param toIndex The coordinate where to move the sheep to
  * @param amount The amount of sheep to move
  * @param playerIndex The player to which these sheep belong to
  * @returns A new game board, or undefined if given values are not valid
  */
 export function moveSheep(
   board: Board,
-  from: BoardIndex,
-  to: BoardIndex,
+  fromIndex: BoardIndex,
+  toIndex: BoardIndex,
   amount: Sheep,
   playerIndex: Player,
 ): Board {
   const newBoard = copy(board);
-  const sheep = boardValueToSheepAmount(newBoard[from]);
+  const sheep = boardValueToSheepAmount(newBoard[fromIndex]);
 
-  newBoard[from] = toBoardValue(sheep - amount, playerIndex);
-  newBoard[to] = toBoardValue(amount, playerIndex);
+  newBoard[fromIndex] = toBoardValue(sheep - amount, playerIndex);
+  newBoard[toIndex] = toBoardValue(amount, playerIndex);
 
   return newBoard;
 }
@@ -187,26 +188,25 @@ export function moveSheep(
  * Sets an amount of sheep to board and returns new board
  *
  * @param board Game board
- * @param coord The coordinate where to place the sheep to
+ * @param index The boardIndex where to place the sheep to
  * @param amount The amount of sheep to place
  * @param playerIndex The player to which this tile belongs to
  * @returns A new game board
  */
 export function setSheep(
   board: Board,
-  coord: BoardIndex,
+  index: BoardIndex,
   amount: Sheep,
   playerIndex: Player,
 ): Board {
   const newBoard = copy(board);
-  newBoard[coord] = toBoardValue(amount, playerIndex);
+  newBoard[index] = toBoardValue(amount, playerIndex);
   return newBoard;
 }
 
 /**
- * Returns an array of the amount of tiles players have in control
- *
  * @param board Game board
+ * @returns A tuple: how many tiles each player controls
  */
 export function getPlayersSheepTileAmount(board: Board): [Sheep, Sheep] {
   let playerSheep = 0;
@@ -214,7 +214,7 @@ export function getPlayersSheepTileAmount(board: Board): [Sheep, Sheep] {
 
   for (let i = 0; i < board.length; i++) {
     const value = board[i];
-    if (boardValueHasSheep(value)) {
+    if (value > 1) {
       const player = boardValueToPlayerIndex(value);
       if (player === 0) {
         playerSheep++;
@@ -227,6 +227,10 @@ export function getPlayersSheepTileAmount(board: Board): [Sheep, Sheep] {
   return [playerSheep, aiSheep];
 }
 
+/**
+ * @param board The game board
+ * @returns -1 if the game is a tie, 0 if player 0 is winner, 1 if player 1 is winner
+ */
 export function getWinner(board: Board): GameStateDynamic["info"]["winner"] {
   const sheepAmounts = getPlayersSheepTileAmount(board);
 
@@ -237,20 +241,32 @@ export function getWinner(board: Board): GameStateDynamic["info"]["winner"] {
   return isTie ? -1 : winner;
 }
 
-export function tbi(x: number, y: number, xSize: number) {
+/**
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param xSize Board horizontal size
+ * @returns Index representation of the x/y coordinate
+ */
+export function tbi(x: number, y: number, xSize: number): BoardIndex {
   return y * xSize + x;
 }
 
-export function fbi(boardCoord: BoardIndex, xSize: number): Coordinate {
-  const x = boardCoord % xSize;
-  const y = (boardCoord - x) / xSize;
+/**
+ * @param index An index on the game board
+ * @param xSize Board horizontal size
+ * @returns Coordinate representation of the board index
+ */
+export function fbi(index: BoardIndex, xSize: number): Coordinate {
+  const x = index % xSize;
+  const y = (index - x) / xSize;
   return [x, y];
 }
 
-export function boardValueHasSheep(value: BoardValue) {
-  return value > 1;
-}
-
+/**
+ * @param sheepAmount The amount of sheep to place
+ * @param playerIndex The player who these sheep belong to
+ * @returns A boardValue which contains the given info
+ */
 export function toBoardValue(
   sheepAmount: Sheep,
   playerIndex: Player,
@@ -258,30 +274,18 @@ export function toBoardValue(
   return sheepAmount + playerIndex * 16 + 1;
 }
 
+/**
+ * @param value A boardValue
+ * @returns The sheep amount in given board value
+ */
 export function boardValueToSheepAmount(value: BoardValue): Sheep {
   return ((value - 2) % 16) + 1;
 }
 
-export function boardValueToPlayerIndex(value: BoardValue): Player {
-  return Math.floor((value - 2) / 16);
-}
-
 /**
- * Returns a new board which removes sheep amount info, basically only contains 0 | 1 | 2
- * 0 = empty tile
- * 1 = player 0
- * 2 = player 1
+ * @param value A boardValue
+ * @returns The player who this tile belongs to
  */
-export function simplifyBoard(board: Board): Board {
-  const newBoard: Board = [];
-  for (let i = 0; i < board.length; i++) {
-    const val = board[i];
-    if (val < 2) {
-      newBoard[i] = 0;
-      continue;
-    }
-
-    newBoard[i] = boardValueToPlayerIndex(board[i]) + 1;
-  }
-  return newBoard;
+export function boardValueToPlayerIndex(value: BoardValue): Player {
+  return Math.floor((value - 2) / 16) as Player;
 }

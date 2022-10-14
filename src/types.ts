@@ -45,7 +45,7 @@ export type BoardValue = number;
 
 export type Coordinate = [number, number];
 export type Sheep = number;
-export type Player = number;
+export type Player = 0 | 1;
 
 export type MovableSheepTile = [Sheep, BoardIndex];
 

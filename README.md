@@ -21,6 +21,7 @@ https://battle-sheep-game.web.app/
 [Week 3](./docs/week3_report.md)  
 [Week 4](./docs/week4_report.md)
 [Week 5](./docs/week5_report.md)
+[Week 6](./docs/week6_report.md)
 
 ### Test coverage
 
@@ -32,7 +33,7 @@ Install Node:
 
 #### Linux
 
-Install [nvm](https://github.com/nvm-sh/nvm) using the installation instructions.
+Install with [nvm](https://github.com/nvm-sh/nvm) using the installation instructions.
 
 #### Windows
 
@@ -44,6 +45,12 @@ To install the project dependencies, run in the project root:
 
 ```
 npm install
+```
+
+### Start up!
+
+```
+npm run dev
 ```
 
 ## Commands

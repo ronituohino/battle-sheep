@@ -15,7 +15,6 @@ import { getRandomInt } from "../utils/random";
 import {
   Board,
   BoardEvaluationPair,
-  BoardIndex,
   GameStateDynamic,
   MoveTarget,
   Sheep,
@@ -43,18 +42,16 @@ export function simulate(
   let newBoard;
 
   if (selectingStart && startTiles !== undefined) {
-    newBoard = setSheep(board, selectStart(startTiles), 16, 1);
-  } else {
-    newBoard = alphabeta(
+    // The start tile is just chosen randomly
+    newBoard = setSheep(
       board,
-      boardXSize,
-      boardYSize,
-      5,
-      BAD,
-      GOOD,
+      startTiles[getRandomInt(startTiles.length)],
+      16,
       1,
-      true,
-    )[1];
+    );
+  } else {
+    // The moves after start are found using minimax + alpha-beta
+    newBoard = alphabeta(board, boardXSize, boardYSize, 6, BAD, GOOD, true)[1];
   }
 
   // if AI couldn't move, newBoard has same reference as board
@@ -66,22 +63,15 @@ export function simulate(
 }
 
 /**
- * In the first turn of the game, choose a starting point.
- * @todo Implement heuristic
- */
-function selectStart(startTiles: BoardIndex[]): BoardIndex {
-  return startTiles[getRandomInt(startTiles.length)];
-}
-
-/**
  * Main AI function in the project. Moves sheep on the board for the AI.
  *
  * @param board Game board
+ * @param boardXSize Game board horizontal size
+ * @param boardYSize Game board vertical size
  * @param depth The depth to which we compute minimax
- * @param a Alpha value
- * @param b Beta value
- * @param currentPlayer The current playerIndex we are computing for (0 or 1)
- * @param maximizing If we want to maximize advantage for this player
+ * @param a Alpha value used in alpha-beta pruning
+ * @param b Beta value used in alpha-beta pruning
+ * @param maximizing True for AI, False for human
  *
  * @returns Advantage value and new board
  */
@@ -92,15 +82,10 @@ export function alphabeta(
   depth: number,
   a: number,
   b: number,
-  currentPlayer: number,
   maximizing: boolean,
 ): BoardEvaluationPair {
-  const moveTargets = getPossibleMoveTargets(
-    board,
-    boardXSize,
-    boardYSize,
-    currentPlayer,
-  );
+  const currentPlayer = maximizing ? 1 : 0;
+  const moveTargets = getPossibleMoveTargets(board, boardXSize, currentPlayer);
 
   // Win/Lose check, add depth to values to prioritise early wins
   if (moveTargets.length === 0) {
@@ -151,9 +136,9 @@ export function alphabeta(
     moves.push([target, sheepList]);
   }
 
-  // Initialize each board with the worst possible rating, to encourage the AI to make some move
-  let value: BoardEvaluationPair = [maximizing ? BAD : GOOD, board];
-  const nextPlayer = currentPlayer === 0 ? 1 : 0;
+  // Initialize each evaluation with the worst possible value, to encourage the AI to make some move
+  let curValue = maximizing ? BAD : GOOD;
+  let curBoard = board;
 
   /**
    * Then traverse over this array optimally and call next alphabeta
@@ -211,51 +196,51 @@ export function alphabeta(
 
     // Minimax + alpha-beta
     if (maximizing) {
-      const res = alphabeta(
+      const [res] = alphabeta(
         newBoard,
         boardXSize,
         boardYSize,
         depth - 1,
         a,
         b,
-        nextPlayer,
         false,
       );
 
-      if (res[0] > value[0]) {
-        value = [res[0], newBoard];
+      if (res > curValue) {
+        curValue = res;
+        curBoard = newBoard;
       }
 
       // beta cutoff
-      if (value[0] >= b) {
+      if (curValue >= b) {
         break;
       }
-      a = Math.max(a, value[0]);
+      a = Math.max(a, curValue);
     } else {
-      const res = alphabeta(
+      const [res] = alphabeta(
         newBoard,
         boardXSize,
         boardYSize,
         depth - 1,
         a,
         b,
-        nextPlayer,
         true,
       );
 
-      if (res[0] < value[0]) {
-        value = [res[0], newBoard];
+      if (res < curValue) {
+        curValue = res;
+        curBoard = newBoard;
       }
 
       // alpha cutoff
-      if (value[0] <= a) {
+      if (curValue <= a) {
         break;
       }
-      b = Math.min(b, value[0]);
+      b = Math.min(b, curValue);
     }
   }
 
-  return value;
+  return [curValue, curBoard];
 }
 
 /**
@@ -267,6 +252,7 @@ export function alphabeta(
  *    any excess sheep negate advantage * 3
  *
  * @param board Game board
+ * @param boardXSize Game board horizontal size
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
 export function evaluate(board: Board, boardXSize: number): number {

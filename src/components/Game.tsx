@@ -154,12 +154,7 @@ export function Game({ setAppState, config }: GameProps) {
 
       // If player can't make any move
       if (
-        getPossibleMoveTargets(
-          newBoard,
-          gameStatic.boardXSize,
-          gameStatic.boardYSize,
-          0,
-        ).length === 0
+        getPossibleMoveTargets(newBoard, gameStatic.boardXSize, 0).length === 0
       ) {
         // And AI can't move
         if (!situation[1]) {
@@ -233,9 +228,7 @@ export function Game({ setAppState, config }: GameProps) {
                   x={x}
                   y={y}
                   sheep={sheep}
-                  color={
-                    player === -1 ? "white" : ["#f15bb5", "#fee440"][player]
-                  }
+                  color={value === 1 ? "white" : ["#f15bb5", "#fee440"][player]}
                   highlighted={highlighted}
                   selected={selected}
                   clickable={highlighted || (sheep > 1 && isPlayerSheep)}
