@@ -1,4 +1,4 @@
-import type { MovePlot } from "../types";
+import type { MoveTarget } from "../types";
 
 import { useState } from "react";
 
@@ -19,8 +19,8 @@ import {
 } from "@chakra-ui/react";
 
 export type MoveSheepModalProps = {
-  move: MovePlot | undefined;
-  setMove: (newMove: MovePlot | undefined) => void;
+  move: MoveTarget | undefined;
+  setMove: (newMove: MoveTarget | undefined) => void;
   makeMove: (amount: number) => void;
 };
 

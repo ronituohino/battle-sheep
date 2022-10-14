@@ -5,7 +5,7 @@
 import {
   boardValueToPlayerIndex,
   boardValueToSheepAmount,
-  getPossibleMoves,
+  getPossibleMoveTargets,
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
@@ -17,7 +17,8 @@ import {
   BoardEvaluationPair,
   BoardIndex,
   GameStateDynamic,
-  MovePlot,
+  MoveTarget,
+  Sheep,
 } from "../types";
 
 const GOOD = 100000;
@@ -53,7 +54,6 @@ export function simulate(
       GOOD,
       1,
       true,
-      getPossibleMoves(board, boardXSize, boardYSize, 1),
     )[1];
   }
 
@@ -94,10 +94,16 @@ export function alphabeta(
   b: number,
   currentPlayer: number,
   maximizing: boolean,
-  possibleMoves: MovePlot[],
 ): BoardEvaluationPair {
+  const moveTargets = getPossibleMoveTargets(
+    board,
+    boardXSize,
+    boardYSize,
+    currentPlayer,
+  );
+
   // Win/Lose check, add depth to values to prioritise early wins
-  if (possibleMoves.length === 0) {
+  if (moveTargets.length === 0) {
     if (maximizing) {
       // If this is the handled AI, bad move (drove itself out of moves)
       // + depth, to prioritize late losses
@@ -115,11 +121,13 @@ export function alphabeta(
     return [evaluation, board];
   }
 
-  let value: BoardEvaluationPair = [maximizing ? BAD : GOOD, board];
+  const moves: [MoveTarget, Sheep[]][] = [];
 
+  // First, create list of targets with their sheep amounts
   // Iterate over all possible moves
-  for (let m = 0; m < possibleMoves.length; m++) {
-    const move = possibleMoves[m];
+  for (let m = 0; m < moveTargets.length; m++) {
+    const target = moveTargets[m];
+    const sheepList: Sheep[] = [];
 
     // With all possible sheep amounts...
     /**
@@ -127,61 +135,10 @@ export function alphabeta(
      * e.g. maxSheep: 8 -> 4-5-3-6-2-7-1
      * e.g. maxSheep: 7 -> 3-4-2-5-1-6
      */
-    let s = move.maxSheep === 1 ? 1 : Math.floor(move.maxSheep / 2);
+    let s = target.maxSheep === 1 ? 1 : Math.floor(target.maxSheep / 2);
     let i = 1;
-    while (s > 0 && s <= move.maxSheep) {
-      const newBoard = moveSheep(board, move.from, move.to, s, currentPlayer);
-      const nextPlayer = nextPlayerIndex(currentPlayer);
-      const nextMoves = getPossibleMoves(
-        newBoard,
-        boardXSize,
-        boardYSize,
-        nextPlayer,
-      );
-
-      if (maximizing) {
-        const res = alphabeta(
-          newBoard,
-          boardXSize,
-          boardYSize,
-          depth - 1,
-          a,
-          b,
-          nextPlayer,
-          false,
-          nextMoves,
-        );
-        if (res[0] > value[0]) {
-          value = [res[0], newBoard];
-        }
-
-        // beta cutoff
-        if (value[0] >= b) {
-          break;
-        }
-        a = Math.max(a, value[0]);
-      } else {
-        const res = alphabeta(
-          newBoard,
-          boardXSize,
-          boardYSize,
-          depth - 1,
-          a,
-          b,
-          nextPlayer,
-          true,
-          nextMoves,
-        );
-        if (res[0] < value[0]) {
-          value = [res[0], newBoard];
-        }
-
-        // alpha cutoff
-        if (value[0] <= a) {
-          break;
-        }
-        b = Math.min(b, value[0]);
-      }
+    while (s > 0 && s <= target.maxSheep) {
+      sheepList.push(s);
 
       s += i;
       if (i > 0) {
@@ -191,13 +148,114 @@ export function alphabeta(
       }
       i *= -1;
     }
+    moves.push([target, sheepList]);
+  }
+
+  // Initialize each board with the worst possible rating, to encourage the AI to make some move
+  let value: BoardEvaluationPair = [maximizing ? BAD : GOOD, board];
+  const nextPlayer = currentPlayer === 0 ? 1 : 0;
+
+  /**
+   * Then traverse over this array optimally and call next alphabeta
+   *
+   * The moves array looks like this:
+   * [
+   * {from, to, maxSheep = 7}[4, 3, 5, 2, 6, 1, 7]
+   * {from, to, maxSheep = 2}[1, 2]
+   * {from, to, maxSheep = 4}[2, 1, 4, 3]
+   * ]
+   *
+   * We want to go over each move and try the first sheep amount,
+   * Then go over all of the moves again with the second sheep amount,
+   * and so on...
+   */
+  let moveIndex = -1;
+  const movesHandled = Array(moves.length).fill(0);
+  const sheepIndexes = Array(moves.length).fill(0); // Array with moves.length amount of 0
+
+  let allDone = false;
+  let allDoneCounter = 0;
+  while (!allDone) {
+    // Traverse logic
+    moveIndex += 1;
+    if (moveIndex >= moves.length) {
+      moveIndex = 0;
+    }
+    if (movesHandled[moveIndex] === 1) {
+      allDoneCounter += 1;
+      if (allDoneCounter >= moves.length) {
+        allDone = true;
+      }
+      continue;
+    }
+    const move = moves[moveIndex];
+    const sheepIndex = sheepIndexes[moveIndex];
+
+    const sheepAmounts = move[1];
+    if (sheepIndex >= sheepAmounts.length) {
+      movesHandled[moveIndex] = 1;
+      continue;
+    }
+    sheepIndexes[moveIndex] += 1;
+    const sheep = sheepAmounts[sheepIndex];
+    const target = move[0];
+
+    // Make the move and get the new board state
+    const newBoard = moveSheep(
+      board,
+      target.from,
+      target.to,
+      sheep,
+      currentPlayer,
+    );
+
+    // Minimax + alpha-beta
+    if (maximizing) {
+      const res = alphabeta(
+        newBoard,
+        boardXSize,
+        boardYSize,
+        depth - 1,
+        a,
+        b,
+        nextPlayer,
+        false,
+      );
+
+      if (res[0] > value[0]) {
+        value = [res[0], newBoard];
+      }
+
+      // beta cutoff
+      if (value[0] >= b) {
+        break;
+      }
+      a = Math.max(a, value[0]);
+    } else {
+      const res = alphabeta(
+        newBoard,
+        boardXSize,
+        boardYSize,
+        depth - 1,
+        a,
+        b,
+        nextPlayer,
+        true,
+      );
+
+      if (res[0] < value[0]) {
+        value = [res[0], newBoard];
+      }
+
+      // alpha cutoff
+      if (value[0] <= a) {
+        break;
+      }
+      b = Math.min(b, value[0]);
+    }
   }
 
   return value;
-}
-
-function nextPlayerIndex(index: number) {
-  return index === 0 ? 1 : 0;
 }
 
 /**
@@ -255,6 +313,7 @@ export function evaluate(board: Board, boardXSize: number): number {
       value += sheep;
     }
 
+    // If we are AI, add value, if this is for the player, negate value
     const player = boardValueToPlayerIndex(boardValue);
     if (player === 1) {
       advantage += value;

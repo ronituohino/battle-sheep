@@ -7,7 +7,7 @@ import type {
   Player,
   BoardIndex,
   Board,
-  MovePlot,
+  MoveTarget,
   GameState,
   GameStateDynamic,
   Sheep,
@@ -105,7 +105,7 @@ export function getPossibleMovesFromTile(
  * @param playerIndex Player whose sheep are searched
  * @returns Array of sheep objects
  */
-export function getMovableSheepFromPlayer(
+export function getTilesMoreThanOneSheepFromPlayer(
   board: Board,
   playerIndex: Player,
 ): MovableSheepTile[] {
@@ -130,14 +130,17 @@ export function getMovableSheepFromPlayer(
  *
  * @returns Array of all possible moves for given player
  */
-export function getPossibleMoves(
+export function getPossibleMoveTargets(
   board: Board,
   boardXSize: number,
   boardYSize: number,
   playerIndex: Player,
 ) {
-  const moves: MovePlot[] = [];
-  const movableSheepTiles = getMovableSheepFromPlayer(board, playerIndex);
+  const moves: MoveTarget[] = [];
+  const movableSheepTiles = getTilesMoreThanOneSheepFromPlayer(
+    board,
+    playerIndex,
+  );
   for (let s = 0; s < movableSheepTiles.length; s++) {
     const [sheep, index] = movableSheepTiles[s];
 

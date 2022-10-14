@@ -2,7 +2,7 @@ import {
   AppState,
   ConfigSchema,
   BoardIndex,
-  MovePlot,
+  MoveTarget,
   Board,
   GameStateStatic,
   GameInfo,
@@ -15,7 +15,7 @@ import {
   initializeGame,
   moveSheep,
   setSheep,
-  getPossibleMoves,
+  getPossibleMoveTargets,
   getWinner,
   boardValueToPlayerIndex,
   boardValueToSheepAmount,
@@ -49,7 +49,7 @@ export function Game({ setAppState, config }: GameProps) {
   // Set this to true to end the player turn
   const [finished, setFinished] = useState(false);
   // Move sheep modal
-  const [move, setMove] = useState<MovePlot>();
+  const [move, setMove] = useState<MoveTarget>();
   // Called from MoveSheepModal.tsx
   function makeMove(amount: number) {
     if (!move || !initDone) {
@@ -154,7 +154,7 @@ export function Game({ setAppState, config }: GameProps) {
 
       // If player can't make any move
       if (
-        getPossibleMoves(
+        getPossibleMoveTargets(
           newBoard,
           gameStatic.boardXSize,
           gameStatic.boardYSize,

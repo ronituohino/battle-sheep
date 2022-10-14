@@ -49,7 +49,7 @@ export type Player = number;
 
 export type MovableSheepTile = [Sheep, BoardIndex];
 
-export type MovePlot = {
+export type MoveTarget = {
   from: BoardIndex;
   to: BoardIndex;
   maxSheep: Sheep;
