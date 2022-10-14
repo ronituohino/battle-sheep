@@ -3,6 +3,7 @@
  */
 
 export const levels = {
+  // Game levels
   mixed: {
     name: "Mixed",
     sizeX: 6,
@@ -37,8 +38,11 @@ export const levels = {
     ],
     test: false,
   },
+
+  // Test levels
+  // Mixed
   test: {
-    name: "Test level, fresh",
+    name: "Test level, mixed",
     sizeX: 6,
     sizeY: 4,
     board: [
@@ -48,7 +52,7 @@ export const levels = {
     test: true,
   },
   testStarted: {
-    name: "Test level where both players have started",
+    name: "Test level, mixed, where both players have started",
     sizeX: 6,
     sizeY: 4,
     board: [
@@ -58,13 +62,36 @@ export const levels = {
     test: true,
   },
   testFull: {
-    name: "Test level filled with player sheep",
+    name: "Test level, mixed, filled with player sheep",
     sizeX: 6,
     sizeY: 4,
     board: [
       2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 0, 2, 2, 2, 0, 0, 2,
     ],
     startTiles: [0, 1, 2, 3, 6, 12, 18, 19, 20, 14, 15, 10, 16, 23],
+    test: true,
+  },
+
+  // Open
+  testOpen: {
+    name: "Test level, open",
+    sizeX: 5,
+    sizeY: 5,
+    board: [
+      1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+    ],
+    startTiles: [0, 1, 2, 5, 8, 10, 14, 16, 19, 22, 23, 24],
+    test: true,
+  },
+  testOpenStarted: {
+    name: "Test level, open, both players have started",
+    sizeX: 5,
+    sizeY: 5,
+    board: [
+      1, 17, 1, 0, 0, 1, 1, 1, 1, 0, 33, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1,
+      1,
+    ],
+    startTiles: [0, 1, 2, 5, 8, 10, 14, 16, 19, 22, 23, 24],
     test: true,
   },
 };

@@ -3,40 +3,40 @@ import { levels } from "../../src/levels";
 import { simulate } from "../../src/game/ai";
 import { Board } from "../../src/types";
 
+// Use these to control performance tests
+const level = levels.testOpen;
+const levelStarted = levels.testOpenStarted;
+
+const aiDepth = 4;
+
 describe("ai", () => {
   it("select start", () => {
     console.time("selecting start");
     simulate(
-      levels.test.board,
-      levels.test.sizeX,
-      levels.test.sizeY,
+      level.board,
+      level.sizeX,
+      level.sizeY,
+      aiDepth,
       true,
-      levels.test.startTiles,
+      level.startTiles,
     );
     console.timeEnd("selecting start");
   });
   it("first move", () => {
-    const start = simulate(
-      levels.test.board,
-      levels.test.sizeX,
-      levels.test.sizeY,
-      true,
-      levels.test.startTiles,
-    );
-
     console.time("first move");
-    simulate(start[0], levels.test.sizeX, levels.test.sizeY);
+    simulate(levelStarted.board, level.sizeX, level.sizeY, aiDepth);
     console.timeEnd("first move");
   });
   it("simulate first 3 move turns for ai", () => {
     console.time("3 moves for ai");
 
-    let board: [Board, boolean] = [levels.testStarted.board, false];
+    let board: [Board, boolean] = [levelStarted.board, false];
     for (let i = 0; i < 3; i++) {
       board = simulate(
         board[0],
-        levels.testStarted.sizeX,
-        levels.testStarted.sizeY,
+        levelStarted.sizeX,
+        levelStarted.sizeY,
+        aiDepth,
       );
     }
 

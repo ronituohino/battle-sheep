@@ -1,6 +1,6 @@
 # Week 4
 
-**Project hours this week: 10**
+**Project hours this week: 11**
 
 I started off with reviewing the AI code to find some obvious places to improve on. I cut down my performance eval time quite a bit.
 I studied if simply storing evaluated board states in a hash map would improve performance:
@@ -24,16 +24,18 @@ I think I'm actually not going to implement a heuristic for the starting tile:
 - We can't effectively use the alphabeta algorithm because the game tree would be massive
 - I'm lazy
 
+I added a bunch of documentation.
+
+Fixed small bugs.
+
 ### What I learned this week
 
 I read more about JS data structures, specifically hash maps.
-
-I managed to optimize the AI quite a bit with a new move organizing algorithm.
+Alpha-beta pruning is really effective when the moves are sorted well.
 
 ### Next up
 
 More levels for unit and performance testing.
 More unit tests on some obvious cases in ai.
-More performance tests on different levels.
 
 Clean the UI.

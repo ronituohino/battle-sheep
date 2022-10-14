@@ -27,6 +27,9 @@ const BAD = -100000;
  * Simulates a turn for the AI.
  *
  * @param board  Game board
+ * @param boardXSize Game board horizontal size
+ * @param boardYSize Game board vertical size
+ * @param depth How many levels do we generate the game tree to?
  * @param selectingStart Are we still selecting start
  * @param startTiles If we are selecting start, what tiles can be selected?
  * @returns a tuple: [newBoard, moved], moved tells if AI could make a move
@@ -35,6 +38,7 @@ export function simulate(
   board: Board,
   boardXSize: number,
   boardYSize: number,
+  depth: number,
   selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
   startTiles: GameStateDynamic["info"]["startTiles"] = [],
 ): [Board, boolean] {
@@ -51,7 +55,15 @@ export function simulate(
     );
   } else {
     // The moves after start are found using minimax + alpha-beta
-    newBoard = alphabeta(board, boardXSize, boardYSize, 5, BAD, GOOD, true)[1];
+    newBoard = alphabeta(
+      board,
+      boardXSize,
+      boardYSize,
+      depth,
+      BAD,
+      GOOD,
+      true,
+    )[1];
   }
 
   // if AI couldn't move, newBoard has same reference as board
