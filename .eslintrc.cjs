@@ -23,6 +23,7 @@ module.exports = {
   },
   rules: {
     "react/react-in-jsx-scope": "off",
+    "react/no-unknown-property": ["error", { ignore: ["css"] }],
   },
   env: {
     node: true,

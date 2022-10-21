@@ -153,5 +153,13 @@ describe("game util", () => {
   it("can determine a winner", () => {
     expect(getWinner(levels.testFull.board)).toEqual(0);
     expect(getWinner(levels.testStarted.board)).toEqual(-1);
+
+    // Gave wrong result in a peer review
+    expect(
+      getWinner([
+        2, 2, 22, 21, 0, 0, 2, 1, 2, 9, 18, 0, 18, 0, 2, 2, 18, 0, 3, 18, 19, 0,
+        0, 18,
+      ]),
+    ).toEqual(-1);
   });
 });

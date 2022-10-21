@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Config } from "./Config";
 import { Game } from "./Game";
-import { Box } from "@chakra-ui/react";
+import { Global, css } from "@emotion/react";
 
 export function App() {
   const [appState, setAppState] = useState<AppState>("config");
@@ -25,5 +25,50 @@ export function App() {
     game: <Game setAppState={setAppState} config={formik.values} />,
   } as const;
 
-  return <Box m="8">{appStates[appState]}</Box>;
+  return (
+    <>
+      <Global
+        styles={css`
+          body {
+            background-image: url("/cloud.png");
+          }
+
+          body,
+          input,
+          select,
+          button {
+            font-family: "Spork", serif;
+            font-size: 24px;
+          }
+
+          button {
+            transition: all 0.3s;
+            background-color: red;
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+
+            &:hover {
+              background-color: blue;
+            }
+            &:active {
+              background-color: yellow;
+            }
+          }
+
+          @font-face {
+            font-family: "Spork";
+            src: url("/fonts/Spork.eot");
+            src: url("/fonts/Spork.eot?#iefix") format("embedded-opentype"),
+              url("/fonts/Spork.woff2") format("woff2"),
+              url("/fonts/Spork.woff") format("woff");
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+          }
+        `}
+      />
+      <div css={{ margin: 8 }}>{appStates[appState]}</div>
+    </>
+  );
 }

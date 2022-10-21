@@ -7,7 +7,6 @@ import {
   GameStateStatic,
   GameInfo,
 } from "../types";
-import { Button, Heading, Flex, Box } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 import {
@@ -19,12 +18,12 @@ import {
   getWinner,
   boardValueToPlayerIndex,
   boardValueToSheepAmount,
-  fbi,
+  indexToCoordinate,
 } from "../game/game";
 import { simulate } from "../game/ai";
 
 import { Tile } from "../components/Tile";
-import { MoveSheepModal } from "../components/MoveSheepModal";
+import { MoveSheep } from "./MoveSheep";
 import { Players } from "../components/Players";
 import { EndGame } from "./EndGame";
 
@@ -45,6 +44,10 @@ export function Game({ setAppState, config }: GameProps) {
   // Tile states
   const [selectedHex, setSelectedHex] = useState<BoardIndex>();
   const [highlightedHexes, setHighlightedHexes] = useState<BoardIndex[]>();
+  const [dimensions, setDimensions] = useState({
+    height: window.innerHeight,
+    width: window.innerWidth,
+  });
 
   // Set this to true to end the player turn
   const [finished, setFinished] = useState(false);
@@ -192,26 +195,56 @@ export function Game({ setAppState, config }: GameProps) {
 
   // Initialize game
   useEffect(() => {
+    function resize() {
+      setDimensions({
+        height: window.innerHeight,
+        width: window.innerWidth,
+      });
+    }
+
+    // UI resize event
+    window.addEventListener("resize", resize);
+
+    // Game logic
     const game = initializeGame(config);
     setGameStatic(game.static);
     setBoard(game.dynamic.board);
     setInfo(game.dynamic.info);
 
     setHighlightedHexes(game.dynamic.info.startTiles);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
+  const uiMultiplier = Math.min(dimensions.height, dimensions.width) / 810;
   return (
-    <Box>
-      <Flex gap="4">
-        <Button onClick={() => setAppState("config")}>Return</Button>
-        <Heading>Battle Sheep</Heading>
+    <div>
+      <div
+        css={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+          alignItems: "center",
+        }}
+      >
+        <h1 css={{ color: "yellow" }}>Battle Sheep</h1>
 
+        <button onClick={() => setAppState("config")}>Return</button>
         <Players />
-      </Flex>
+        <MoveSheep move={move} setMove={setMove} makeMove={makeMove} />
+      </div>
 
       {initDone && (
         <>
-          <Box position="relative" left="50%">
+          <div
+            css={{
+              position: "relative",
+              left: `calc(50% - ${gameStatic.boardXSize} * calc(${uiMultiplier} * 30px))`,
+            }}
+          >
             {board.map((value, index) => {
               // 0 means missing tile in map
               if (value === 0) {
@@ -222,12 +255,15 @@ export function Game({ setAppState, config }: GameProps) {
                 ? highlightedHexes.includes(index)
                 : false;
               const selected = selectedHex === index;
+              const moving =
+                move !== undefined &&
+                (move.to === index || move.from === index);
 
               const player = boardValueToPlayerIndex(value);
               const sheep = boardValueToSheepAmount(value);
 
               const isPlayerSheep = player === 0;
-              const [x, y] = fbi(index, gameStatic?.boardXSize);
+              const [x, y] = indexToCoordinate(index, gameStatic?.boardXSize);
 
               return (
                 <Tile
@@ -235,16 +271,19 @@ export function Game({ setAppState, config }: GameProps) {
                   x={x}
                   y={y}
                   sheep={sheep}
-                  color={value === 1 ? "white" : ["#f15bb5", "#fee440"][player]}
+                  color={
+                    value === 1 ? "#fffc59" : ["#34eb46", "#1e6341"][player]
+                  }
                   highlighted={highlighted}
                   selected={selected}
+                  moving={moving}
                   clickable={highlighted || (sheep > 1 && isPlayerSheep)}
                   click={() => handleTileClick(index, highlighted, selected)}
+                  uiMultiplier={uiMultiplier}
                 />
               );
             })}
-          </Box>
-          <MoveSheepModal move={move} setMove={setMove} makeMove={makeMove} />
+          </div>
           <EndGame
             gameEnded={info.gameEnded}
             winner={info.winner}
@@ -252,6 +291,6 @@ export function Game({ setAppState, config }: GameProps) {
           />
         </>
       )}
-    </Box>
+    </div>
   );
 }

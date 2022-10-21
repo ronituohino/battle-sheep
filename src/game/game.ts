@@ -73,7 +73,7 @@ export function getPossibleMovesFromTile(
 
   // Select movement direction
   for (let i = 0; i < 6; i++) {
-    let [x, y] = fbi(selectedTile, boardXSize);
+    let [x, y] = indexToCoordinate(selectedTile, boardXSize);
     const [moveX, moveY] = movement[i];
 
     let boundaryFound = false;
@@ -84,7 +84,7 @@ export function getPossibleMovesFromTile(
       x += moveX;
       y += moveY;
 
-      const index = tbi(x, y, boardXSize);
+      const index = coordinateToIndex(x, y, boardXSize);
 
       if (
         x < 0 ||
@@ -255,21 +255,32 @@ export function getWinner(board: Board): GameStateDynamic["info"]["winner"] {
 }
 
 /**
+ * Transform a coordinate to an index on a board object
+ *
  * @param x X coordinate
  * @param y Y coordinate
  * @param xSize Board horizontal size
  * @returns Index representation of the x/y coordinate
  */
-export function tbi(x: number, y: number, xSize: number): BoardIndex {
+export function coordinateToIndex(
+  x: number,
+  y: number,
+  xSize: number,
+): BoardIndex {
   return y * xSize + x;
 }
 
 /**
+ * Transform an index on a board object to a coordinate
+ *
  * @param index An index on the game board
  * @param xSize Board horizontal size
  * @returns Coordinate representation of the board index
  */
-export function fbi(index: BoardIndex, xSize: number): Coordinate {
+export function indexToCoordinate(
+  index: BoardIndex,
+  xSize: number,
+): Coordinate {
   const x = index % xSize;
   const y = (index - x) / xSize;
   return [x, y];

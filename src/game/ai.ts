@@ -9,7 +9,7 @@ import {
   getPossibleMovesFromTile,
   moveSheep,
   setSheep,
-  fbi,
+  indexToCoordinate,
 } from "./game";
 import { getRandomInt } from "../utils/random";
 import {
@@ -295,9 +295,9 @@ function evaluate(
     const moves = getPossibleMovesFromTile(board, boardXSize, boardYSize, i);
 
     if (moves) {
-      const [x, y] = fbi(i, boardXSize);
+      const [x, y] = indexToCoordinate(i, boardXSize);
       for (let m = 0; m < moves.length; m++) {
-        const targetCoord = fbi(moves[m], boardXSize);
+        const targetCoord = indexToCoordinate(moves[m], boardXSize);
 
         const diffX = Math.abs(x - targetCoord[0]);
         const diffY = Math.abs(y - targetCoord[1]);

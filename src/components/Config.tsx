@@ -1,16 +1,6 @@
 import type { FormikProps } from "formik";
 import type { ConfigSchema } from "../types";
 
-import {
-  RadioGroup,
-  Radio,
-  Button,
-  Text,
-  Box,
-  Heading,
-  Flex,
-} from "@chakra-ui/react";
-
 import { levels } from "../levels";
 
 export type ConfigProps = {
@@ -19,36 +9,54 @@ export type ConfigProps = {
 
 export function Config({ formik }: ConfigProps) {
   return (
-    <Flex flexDir="column" alignItems="center" gap="4">
-      <Heading>Battle Sheep</Heading>
+    <div
+      css={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <h1
+        css={{
+          color: "yellow",
+        }}
+      >
+        Battle Sheep
+      </h1>
 
-      <Box width="50vw">
+      <div css={{ width: "50vw" }}>
         <form onSubmit={formik.handleSubmit}>
-          <Text>Level select</Text>
-          <RadioGroup
-            onChange={(value) => formik.setFieldValue("levelKey", value)}
-            value={formik.values.levelKey}
-            display="flex"
-            flexDir="column"
-          >
+          <p>Level select</p>
+          <div css={{ display: "flex", flexDirection: "column" }}>
             {Object.entries(levels).map(([key, value]) => {
               if (value.test) {
                 return;
               }
 
               return (
-                <Radio key={key} value={key}>
-                  {value.name}
-                </Radio>
+                <div key={key}>
+                  <input
+                    type="radio"
+                    id={key}
+                    value={key}
+                    checked={formik.values.levelKey === key}
+                    name="level"
+                    onChange={(e) =>
+                      formik.setFieldValue("levelKey", e.target.value)
+                    }
+                  />
+                  <label htmlFor={key}>{value.name}</label>
+                </div>
               );
             })}
-          </RadioGroup>
+          </div>
 
-          <Button type="submit" mt="4">
+          <button type="submit" css={{ marginTop: 4 }}>
             Play
-          </Button>
+          </button>
         </form>
-      </Box>
-    </Flex>
+      </div>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-import { Button, Text } from "@chakra-ui/react";
 import { AppState, GameStateDynamic } from "../types";
 
 export type EndGameProps = {
@@ -12,15 +11,15 @@ export function EndGame({ gameEnded, winner, setAppState }: EndGameProps) {
     <>
       {gameEnded && (
         <>
-          <Text>Game ended!</Text>
+          <p>Game ended!</p>
 
           {winner === -1 ? (
-            <Text>The game is a tie!</Text>
+            <p>The game is a tie!</p>
           ) : (
-            <Text>{winner === 0 ? "You win!" : "The AI wins."}</Text>
+            <p>{winner === 0 ? "You win!" : "Joshi wins!"}</p>
           )}
 
-          <Button onClick={() => setAppState("config")}>Back to config</Button>
+          <button onClick={() => setAppState("config")}>Back to config</button>
         </>
       )}
     </>

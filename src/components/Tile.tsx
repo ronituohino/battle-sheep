@@ -5,8 +5,10 @@ export type TileProps = {
   color: string;
   highlighted: boolean;
   selected: boolean;
+  moving: boolean;
   clickable: boolean;
   click: () => void;
+  uiMultiplier: number;
 };
 
 export function Tile({
@@ -16,40 +18,48 @@ export function Tile({
   color,
   highlighted,
   selected,
+  moving,
   clickable,
   click,
+  uiMultiplier,
 }: TileProps) {
-  let properties = {
-    stroke: "black",
-    strokeWidth: 5,
-  };
+  let properties = {};
 
   if (highlighted) {
     properties = {
-      stroke: "red",
-      strokeWidth: 8,
+      stroke: "#a85a00",
+      strokeWidth: 6,
     };
   }
 
   if (selected) {
     properties = {
-      stroke: "green",
-      strokeWidth: 10,
+      stroke: "#a85a00",
+      strokeWidth: 8,
+    };
+  }
+
+  if (moving) {
+    properties = {
+      stroke: "#1c03fc",
+      strokeWidth: 8,
     };
   }
 
   return (
     <svg
       viewBox="-10 -10 120 120"
-      width="100px"
-      style={{
+      width={uiMultiplier * 100}
+      css={{
         position: "absolute",
-        left: `calc(calc(${x} * 100px) - calc(${y} * 50px))`,
-        top: `calc(${y} * 80px)`,
+        left: `calc(calc(${x * uiMultiplier} * 95px) - calc(${
+          y * uiMultiplier
+        } * 47.5px))`,
+        top: `calc(${y * uiMultiplier} * 75px)`,
       }}
     >
       <g
-        style={{ cursor: clickable ? "pointer" : "auto" }}
+        css={{ cursor: clickable ? "pointer" : "auto" }}
         onClick={() => {
           if (clickable) {
             click();
@@ -62,20 +72,22 @@ export function Tile({
           {...properties}
         />
 
-        {sheep > 0 && (
+        {sheep > 0 ? (
           <text
-            x="50"
+            x="45"
             y="55"
-            style={{
+            css={{
               dominantBaseline: "middle",
               textAnchor: "middle",
-              fontSize: 30,
+              fontSize: 55,
               userSelect: "none",
               WebkitUserSelect: "none",
             }}
           >
             {sheep}
           </text>
+        ) : (
+          <image x="20" y="20" href="/hay.png" />
         )}
       </g>
     </svg>
