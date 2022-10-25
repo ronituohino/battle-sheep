@@ -89,8 +89,8 @@ export function getPossibleMovesFromTile(
       if (
         x < 0 ||
         y < 0 ||
-        x > boardXSize ||
-        y > boardYSize ||
+        x >= boardXSize ||
+        y >= boardYSize ||
         board[index] !== 1
       ) {
         boundaryFound = true;

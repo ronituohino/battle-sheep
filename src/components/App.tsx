@@ -43,16 +43,16 @@ export function App() {
 
           button {
             transition: all 0.3s;
-            background-color: red;
+            background-color: yellow;
             border-radius: 8px;
             border: none;
             padding: 10px;
 
             &:hover {
-              background-color: blue;
+              background-color: #e6e600;
             }
             &:active {
-              background-color: yellow;
+              background-color: #c8c800;
             }
           }
 

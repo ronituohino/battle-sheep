@@ -25,29 +25,67 @@ export function Config({ formik }: ConfigProps) {
         Battle Sheep
       </h1>
 
-      <div css={{ width: "50vw" }}>
-        <form onSubmit={formik.handleSubmit}>
-          <p>Level select</p>
-          <div css={{ display: "flex", flexDirection: "column" }}>
+      <div css={{ maxWidth: "320px" }}>
+        <form
+          onSubmit={formik.handleSubmit}
+          css={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <h3>Level select</h3>
+          <div>
             {Object.entries(levels).map(([key, value]) => {
               if (value.test) {
                 return;
               }
 
+              const checked = formik.values.levelKey === key;
+              const checkedProperty = checked
+                ? { boxShadow: "0 0 0 5px black" }
+                : undefined;
+
               return (
-                <div key={key}>
+                <label key={key}>
+                  <div
+                    css={{
+                      margin: 16,
+                      paddingTop: 4,
+                      paddingBottom: 4,
+                      paddingLeft: 16,
+                      paddingRight: 16,
+                      borderRadius: 8,
+                      backgroundColor: "white",
+                      "&:hover": {
+                        cursor: "pointer",
+                      },
+                      ...checkedProperty,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <p
+                      css={{
+                        userSelect: "none",
+                        WebkitUserSelect: "none",
+                        textAlign: "center",
+                      }}
+                    >
+                      {key}
+                    </p>
+                  </div>
+
                   <input
                     type="radio"
-                    id={key}
                     value={key}
-                    checked={formik.values.levelKey === key}
+                    checked={checked}
                     name="level"
                     onChange={(e) =>
                       formik.setFieldValue("levelKey", e.target.value)
                     }
+                    css={{ display: "none" }}
                   />
-                  <label htmlFor={key}>{value.name}</label>
-                </div>
+                </label>
               );
             })}
           </div>

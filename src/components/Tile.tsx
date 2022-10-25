@@ -23,12 +23,12 @@ export function Tile({
   click,
   uiMultiplier,
 }: TileProps) {
-  let properties = {};
+  let properties = { stroke: "transparent", strokeWidth: 5 };
 
   if (highlighted) {
     properties = {
       stroke: "#a85a00",
-      strokeWidth: 6,
+      strokeWidth: 5,
     };
   }
 
@@ -70,6 +70,9 @@ export function Tile({
           points="50 0,100 25,100 75, 50 100,0 75,0 25"
           fill={color}
           {...properties}
+          css={{
+            transition: "all 0.15s",
+          }}
         />
 
         {sheep > 0 ? (

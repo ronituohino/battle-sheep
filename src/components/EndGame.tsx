@@ -1,26 +1,32 @@
-import { AppState, GameStateDynamic } from "../types";
+import { AppState, GameInfo } from "../types";
 
 export type EndGameProps = {
-  gameEnded: boolean;
-  winner: GameStateDynamic["info"]["winner"];
+  info: GameInfo | undefined;
   setAppState: (appState: AppState) => void;
 };
 
-export function EndGame({ gameEnded, winner, setAppState }: EndGameProps) {
+const texts = {
+  "-1": "The game is a tie 👉👈",
+  "0": "You win! 🎉🎉",
+  "1": "Joshi wins! 👀",
+};
+
+export function EndGame({ info, setAppState }: EndGameProps) {
   return (
     <>
-      {gameEnded && (
-        <>
+      {info !== undefined && info.gameEnded && (
+        <div
+          css={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <p>Game ended!</p>
-
-          {winner === -1 ? (
-            <p>The game is a tie!</p>
-          ) : (
-            <p>{winner === 0 ? "You win!" : "Joshi wins!"}</p>
-          )}
-
+          <div>{texts[info.winner]}</div>
           <button onClick={() => setAppState("config")}>Back to config</button>
-        </>
+        </div>
       )}
     </>
   );

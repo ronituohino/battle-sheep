@@ -102,7 +102,7 @@ export function Game({ setAppState, config }: GameProps) {
         // Check if there are sheep to move
         const value = board[selectedHex];
 
-        // Bring up MoveSheepModal
+        // Bring up MoveSheep
         setMove({
           from: selectedHex,
           to: index,
@@ -233,63 +233,62 @@ export function Game({ setAppState, config }: GameProps) {
         <h1 css={{ color: "yellow" }}>Battle Sheep</h1>
 
         <button onClick={() => setAppState("config")}>Return</button>
-        <Players />
-        <MoveSheep move={move} setMove={setMove} makeMove={makeMove} />
+
+        <div
+          css={{
+            display: "grid",
+            gridTemplateColumns: "auto auto auto",
+            gap: 16,
+          }}
+        >
+          <Players />
+          <MoveSheep move={move} setMove={setMove} makeMove={makeMove} />
+          <EndGame info={info} setAppState={setAppState} />
+        </div>
       </div>
-
       {initDone && (
-        <>
-          <div
-            css={{
-              position: "relative",
-              left: `calc(50% - ${gameStatic.boardXSize} * calc(${uiMultiplier} * 30px))`,
-            }}
-          >
-            {board.map((value, index) => {
-              // 0 means missing tile in map
-              if (value === 0) {
-                return;
-              }
+        <div
+          css={{
+            position: "relative",
+            left: `calc(50% - ${gameStatic.boardXSize} * calc(${uiMultiplier} * 30px))`,
+          }}
+        >
+          {board.map((value, index) => {
+            // 0 means missing tile in map
+            if (value === 0) {
+              return;
+            }
 
-              const highlighted = highlightedHexes
-                ? highlightedHexes.includes(index)
-                : false;
-              const selected = selectedHex === index;
-              const moving =
-                move !== undefined &&
-                (move.to === index || move.from === index);
+            const highlighted = highlightedHexes
+              ? highlightedHexes.includes(index)
+              : false;
+            const selected = selectedHex === index;
+            const moving =
+              move !== undefined && (move.to === index || move.from === index);
 
-              const player = boardValueToPlayerIndex(value);
-              const sheep = boardValueToSheepAmount(value);
+            const player = boardValueToPlayerIndex(value);
+            const sheep = boardValueToSheepAmount(value);
 
-              const isPlayerSheep = player === 0;
-              const [x, y] = indexToCoordinate(index, gameStatic?.boardXSize);
+            const isPlayerSheep = player === 0;
+            const [x, y] = indexToCoordinate(index, gameStatic?.boardXSize);
 
-              return (
-                <Tile
-                  key={`${value}-${index}`}
-                  x={x}
-                  y={y}
-                  sheep={sheep}
-                  color={
-                    value === 1 ? "#fffc59" : ["#34eb46", "#1e6341"][player]
-                  }
-                  highlighted={highlighted}
-                  selected={selected}
-                  moving={moving}
-                  clickable={highlighted || (sheep > 1 && isPlayerSheep)}
-                  click={() => handleTileClick(index, highlighted, selected)}
-                  uiMultiplier={uiMultiplier}
-                />
-              );
-            })}
-          </div>
-          <EndGame
-            gameEnded={info.gameEnded}
-            winner={info.winner}
-            setAppState={setAppState}
-          />
-        </>
+            return (
+              <Tile
+                key={`${value}-${index}`}
+                x={x}
+                y={y}
+                sheep={sheep}
+                color={value === 1 ? "#fffc59" : ["#34eb46", "#1e6341"][player]}
+                highlighted={highlighted}
+                selected={selected}
+                moving={moving}
+                clickable={highlighted || (sheep > 1 && isPlayerSheep)}
+                click={() => handleTileClick(index, highlighted, selected)}
+                uiMultiplier={uiMultiplier}
+              />
+            );
+          })}
+        </div>
       )}
     </div>
   );
