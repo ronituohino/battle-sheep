@@ -56,6 +56,17 @@ export function App() {
             }
           }
 
+          a {
+            color: white;
+            text-decoration: none;
+          }
+
+          h1 {
+            color: yellow;
+            margin-bottom: 0px;
+            text-align: center;
+          }
+
           @font-face {
             font-family: "Spork";
             src: url("/fonts/Spork.eot");
@@ -68,7 +79,15 @@ export function App() {
           }
         `}
       />
-      <div css={{ margin: 8 }}>{appStates[appState]}</div>
+      <header>
+        <a href="https://www.blueorangegames.com/index.php/games/battle-sheep">
+          <h1>Battle Sheep</h1>
+        </a>
+      </header>
+      <main css={{ margin: 8 }}>{appStates[appState]}</main>
+      <footer css={{ position: "fixed", bottom: 0, textAlign: "center" }}>
+        <a href="https://github.com/ronituohino/tiralabra">View source</a>
+      </footer>
     </>
   );
 }

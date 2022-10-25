@@ -52,7 +52,7 @@ export function Game({ setAppState, config }: GameProps) {
   // Set this to true to end the player turn
   const [finished, setFinished] = useState(false);
   // Move sheep modal
-  const [move, setMove] = useState<MoveTarget>();
+  const [move, setMove] = useState<MoveTarget | undefined>(undefined);
   // Called from MoveSheepModal.tsx
   function makeMove(amount: number) {
     if (!move || !initDone) {
@@ -111,6 +111,8 @@ export function Game({ setAppState, config }: GameProps) {
       }
       return;
     }
+
+    setMove(undefined);
 
     // Select a tile
     const boardValue = board[index];
@@ -230,9 +232,9 @@ export function Game({ setAppState, config }: GameProps) {
           alignItems: "center",
         }}
       >
-        <h1 css={{ color: "yellow" }}>Battle Sheep</h1>
-
-        <button onClick={() => setAppState("config")}>Return</button>
+        <button onClick={() => setAppState("config")} css={{ marginTop: 8 }}>
+          Return
+        </button>
 
         <div
           css={{
@@ -242,7 +244,7 @@ export function Game({ setAppState, config }: GameProps) {
           }}
         >
           <Players />
-          <MoveSheep move={move} setMove={setMove} makeMove={makeMove} />
+          <MoveSheep move={move} makeMove={makeMove} />
           <EndGame info={info} setAppState={setAppState} />
         </div>
       </div>

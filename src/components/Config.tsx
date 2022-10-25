@@ -17,14 +17,6 @@ export function Config({ formik }: ConfigProps) {
         gap: 4,
       }}
     >
-      <h1
-        css={{
-          color: "yellow",
-        }}
-      >
-        Battle Sheep
-      </h1>
-
       <div css={{ maxWidth: "320px" }}>
         <form
           onSubmit={formik.handleSubmit}

@@ -94,4 +94,22 @@ export const levels = {
     startTiles: [0, 1, 2, 5, 8, 10, 14, 16, 19, 22, 23, 24],
     test: true,
   },
+
+  // Smaller tests
+  testMovement: {
+    name: "Test level, ai should move to open space",
+    sizeX: 3,
+    sizeY: 5,
+    board: [1, 1, 0, 1, 1, 1, 0, 1, 17, 0, 33, 0, 0, 1, 1],
+    startTiles: [],
+    test: true,
+  },
+  testBlocking: {
+    name: "Test level, ai should block player",
+    sizeX: 3,
+    sizeY: 5,
+    board: [1, 0, 0, 1, 0, 0, 33, 1, 17, 0, 1, 0, 0, 0, 1],
+    startTiles: [],
+    test: true,
+  },
 };

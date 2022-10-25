@@ -5,11 +5,10 @@ import { isNumeric } from "../utils/regex";
 
 export type MoveSheepProps = {
   move: MoveTarget | undefined;
-  setMove: (newMove: MoveTarget | undefined) => void;
   makeMove: (amount: number) => void;
 };
 
-export function MoveSheep({ move, setMove, makeMove }: MoveSheepProps) {
+export function MoveSheep({ move, makeMove }: MoveSheepProps) {
   const [sheepToMove, setSheepToMove] = useState<string>("1");
   const [moveValid, setMoveValid] = useState(true);
 
@@ -24,7 +23,7 @@ export function MoveSheep({ move, setMove, makeMove }: MoveSheepProps) {
         gap: 8,
       }}
     >
-      <p>Move</p>
+      <p>Movement</p>
       <input
         type="number"
         value={sheepToMove}
@@ -68,26 +67,6 @@ export function MoveSheep({ move, setMove, makeMove }: MoveSheepProps) {
           }
         >
           Move
-        </button>
-        <button
-          onClick={() => {
-            // Reset sheep to move
-            setSheepToMove("1");
-            setMoveValid(true);
-            setMove(undefined);
-          }}
-          css={
-            !enabled
-              ? {
-                  backgroundColor: "gray",
-                  "&:hover": {
-                    backgroundColor: "gray",
-                  },
-                }
-              : {}
-          }
-        >
-          Cancel
         </button>
       </div>
     </div>
