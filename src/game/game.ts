@@ -61,7 +61,9 @@ const movement = [
  *
  * @param board The game board
  * @param boardXSize The horizontal size of the game board
+ * @param boardYSize The vertical size of the game board
  * @param selectedTile The index which we want the moves to be looked from
+ * @returns an array of board indexes, to which one can move from the selected tile
  * */
 export function getPossibleMovesFromTile(
   board: Board,
@@ -136,6 +138,7 @@ export function getTilesMoreThanOneSheepFromPlayer(
 /**
  * @param board Game board
  * @param boardXSize The game board horizontal size
+ * @param boardYSize The game board vertical size
  * @param playerIndex Player
  * @returns Array of all possible moves for given player
  */

@@ -270,6 +270,7 @@ function alphabeta(
  *
  * @param board Game board
  * @param boardXSize Game board horizontal size
+ * @param boardYSize Game board vertical size
  * @returns The board advantage (negative values means player 0 has advantage, positive values mean player 1 has advantage)
  */
 function evaluate(

@@ -69,6 +69,16 @@ Since the starting tile is just selected randomly, I excluded their results.
 | Open  | 7     | First move | 21.95s       |
 | Open  | 7     | 3 moves    | 1min 14s     |
 
-From the results we can see that open maps have generally longer compute times, because the game tree grows larger when there are more possible moves from each tile. We can also see that the first move usually takes most of the time to compute, since that's when the game tree grows largest. My implementation can compute down to depth 7 in a reasonable time, but to make gameplay smooth, I stick with depth 5 in the web build.
+From the results we can see that the compute time grows exponentially as the depth increases.
+
+We can also see that open maps have generally longer compute times, because the game tree grows larger when there are more possible moves from each tile.
+
+We can also see that the first move usually takes most of the time to compute when the depth is low. When the depth grows larger, the difference grows:
+
+Level = Open, X-axis = depth, Y-axis= compute time in seconds
+
+![](/docs/images/perf-graph.png)
+
+My implementation can compute down to depth 7 in a reasonable time, but to make gameplay smooth, I stick with depth 5 in the web build.
 
 I'm really happy with the results!
