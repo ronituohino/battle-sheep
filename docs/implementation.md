@@ -68,6 +68,8 @@ Here are some test results from my performance testing:
 From this we can see that there is still room for optimization.  
 [more info in the testing doc](./testing.md)
 
+I couldn't find much on the space-complexity of alpha-beta, but I believe it's somewhere around O(bdn), where b is branching factor, d is depth, and n is the size of the game board. This is because the algorithm has to store the game board state at each depth, and at each branching node. From the visited nodes, good board states are returned upwards the game tree, and bad ones are discarded.
+
 However, I'm happy with the results since the AI can play quite well even with d=5.
 
 # Flaws & improvements
