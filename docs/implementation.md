@@ -9,7 +9,7 @@
 - `game.ts` helps control the game board.
 - `ai.ts` simulates the AI for the game.
 
-`/src/levels.ts` contains the game level definitions.
+`/src/levels.ts` contains the game level definitions.  
 `/src/types.ts` contains TypeScript types used throughout the project.
 
 `/src/utils` has small utility functions used here and there.
