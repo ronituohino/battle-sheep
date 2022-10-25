@@ -11,7 +11,7 @@ https://battle-sheep-game.web.app/
 
 [Design document](./docs/design.md) (Määrittelydokumentti)  
 [Manual](./docs/manual.md) (Käyttöohje)  
-[Performance report](./docs/performance.md) (Toteutusdokumentti)  
+[Performance report](./docs/implementation.md) (Toteutusdokumentti)  
 [Testing report](./docs/testing.md) (Testausdokumentti)
 
 ### Weekly reports
