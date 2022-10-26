@@ -43,22 +43,40 @@ describe("ai", () => {
 
   // Testing if the alphabeta algorithm works
   // It should be able to find winning states from the game tree and make those moves even without a heuristic
-  it("selects the winning move from two possibilities, 1", () => {
-    const result = simulate(levels.testAlphabeta1.board, levels.testAlphabeta1.sizeX, levels.testAlphabeta1.sizeY, aiDepth)
+  it("selects the winning move, 1", () => {
+    const result = simulate(
+      levels.testAlphabeta1.board,
+      levels.testAlphabeta1.sizeX,
+      levels.testAlphabeta1.sizeY,
+      aiDepth,
+    );
 
-    expect(result[0][2]).toBeGreaterThanOrEqual(18)
-    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
-  })
-  it("selects the winning move from two possibilities, 2", () => {
-    const result = simulate(levels.testAlphabeta2.board, levels.testAlphabeta2.sizeX, levels.testAlphabeta2.sizeY, aiDepth)
+    // In this case, this move is the only winning move
+    expect(result[0][2]).toBeGreaterThanOrEqual(18);
+    // Check that the algorithm also recognized it as a win
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
+  });
+  it("selects the winning move, 2", () => {
+    const result = simulate(
+      levels.testAlphabeta2.board,
+      levels.testAlphabeta2.sizeX,
+      levels.testAlphabeta2.sizeY,
+      aiDepth,
+    );
 
-    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
-  })
-  it("selects the winning move from two possibilities, 3", () => {
-    const result = simulate(levels.testAlphabeta3.board, levels.testAlphabeta3.sizeX, levels.testAlphabeta3.sizeY, aiDepth)
-    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
-  })
-  it("selects the winning move from three possibilities, 4", () => {
+    // In this situation there's a few winning moves, but check that at least one is found
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
+  });
+  it("selects the winning move, 3", () => {
+    const result = simulate(
+      levels.testAlphabeta3.board,
+      levels.testAlphabeta3.sizeX,
+      levels.testAlphabeta3.sizeY,
+      aiDepth,
+    );
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
+  });
+  it("selects the winning move, 4", () => {
     const result = simulate(
       levels.testAlphabeta4.board,
       levels.testAlphabeta4.sizeX,
@@ -66,33 +84,55 @@ describe("ai", () => {
       aiDepth,
     );
 
-    expect(result[0][coordinateToIndex(1, 2, levels.testAlphabeta4.sizeX)]).toBeGreaterThanOrEqual(18);
-    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+    expect(
+      result[0][coordinateToIndex(1, 2, levels.testAlphabeta4.sizeX)],
+    ).toBeGreaterThanOrEqual(18);
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
   });
   // aiDepth >= 5 for this to pass
-  it("selects the winning move from three possibilities, 5", () => {
+  it("selects the winning move, 5", () => {
     const result = simulate(
       levels.testAlphabeta5.board,
       levels.testAlphabeta5.sizeX,
       levels.testAlphabeta5.sizeY,
       aiDepth,
     );
-    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
+  });
+  it("selects the winning move, 6", () => {
+    const result = simulate(
+      levels.testAlphabeta6.board,
+      levels.testAlphabeta6.sizeX,
+      levels.testAlphabeta6.sizeY,
+      aiDepth,
+    );
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD);
   });
 
   // This could be considered performance testing, since we need the heuristic for these tests
   // However, I think even a basic heuristic makes these tests passable and is essential for the AI itself to work
-  it("moves to an area with more free space", () => {
+  it("moves to an area with more free space, 1", () => {
     const result = simulate(
-      levels.testMovement.board,
-      levels.testMovement.sizeX,
-      levels.testMovement.sizeY,
+      levels.testMovement1.board,
+      levels.testMovement1.sizeX,
+      levels.testMovement1.sizeY,
       aiDepth,
     );
 
     // Ai should move to an area with more space available
     expect(result[0][coordinateToIndex(1, 0, 3)]).toBeGreaterThanOrEqual(18);
     // And there isn't a winning move by minimax
-    expect(result[2]).toBeLessThan(GOOD)
+    expect(result[2]).toBeLessThan(GOOD);
+  });
+  it("moves to an area with more free space, 2", () => {
+    const result = simulate(
+      levels.testMovement2.board,
+      levels.testMovement2.sizeX,
+      levels.testMovement2.sizeY,
+      aiDepth,
+    );
+
+    expect(result[0][2]).toBeGreaterThanOrEqual(18);
+    expect(result[2]).toBeLessThan(GOOD);
   });
 });
