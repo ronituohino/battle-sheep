@@ -7,7 +7,7 @@ import { Board } from "../../src/types";
 const level = levels.testOpen;
 const levelStarted = levels.testOpenStarted;
 
-const aiDepth = 4;
+const aiDepth = 6;
 
 describe("ai", () => {
   it("select start", () => {
@@ -30,7 +30,7 @@ describe("ai", () => {
   it("simulate first 3 move turns for ai", () => {
     console.time("3 moves for ai");
 
-    let board: [Board, boolean] = [levelStarted.board, false];
+    let board: [Board, boolean, number] = [levelStarted.board, false, 0];
     for (let i = 0; i < 3; i++) {
       board = simulate(
         board[0],

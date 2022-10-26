@@ -20,8 +20,8 @@ import {
   Sheep,
 } from "../types";
 
-const GOOD = 100000;
-const BAD = -100000;
+export const GOOD = 100000 as const;
+export const BAD = -100000 as const;
 
 /**
  * Simulates a turn for the AI.
@@ -41,21 +41,21 @@ export function simulate(
   depth: number,
   selectingStart: GameStateDynamic["info"]["selectingStart"] = false,
   startTiles: GameStateDynamic["info"]["startTiles"] = [],
-): [Board, boolean] {
+): [BoardEvaluationPair[1], boolean, BoardEvaluationPair[0]] {
   let moved = false;
-  let newBoard;
+  let newBoardWithEval: BoardEvaluationPair;
 
   if (selectingStart && startTiles !== undefined) {
     // The start tile is just chosen randomly
-    newBoard = setSheep(
+    newBoardWithEval = [0, setSheep(
       board,
       startTiles[getRandomInt(startTiles.length)],
       16,
       1,
-    );
+    )]
   } else {
     // The moves after start are found using minimax + alpha-beta
-    newBoard = alphabeta(
+    newBoardWithEval = alphabeta(
       board,
       boardXSize,
       boardYSize,
@@ -63,15 +63,15 @@ export function simulate(
       BAD,
       GOOD,
       true,
-    )[1];
+    );
   }
 
   // if AI couldn't move, newBoard has same reference as board
-  if (newBoard !== board) {
+  if (newBoardWithEval[1] !== board) {
     moved = true;
   }
 
-  return [newBoard, moved];
+  return [newBoardWithEval[1], moved, newBoardWithEval[0]];
 }
 
 /**
@@ -108,8 +108,8 @@ function alphabeta(
   if (moveTargets.length === 0) {
     if (maximizing) {
       // If this is the handled AI, bad move (drove itself out of moves)
-      // + depth, to prioritize late losses
-      return [BAD + depth, board];
+      // - depth, to prioritize late losses
+      return [BAD - depth, board];
     } else {
       // If this is another player, really good (no moves for the other player)
       // + depth, to prioritize early wins
@@ -154,7 +154,7 @@ function alphabeta(
   }
 
   // Initialize each evaluation with the worst possible value, to encourage the AI to make some move
-  let curValue = maximizing ? BAD : GOOD;
+  let curValue = maximizing ? BAD : GOOD as number;
   let curBoard = board;
 
   /**

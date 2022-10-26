@@ -95,20 +95,72 @@ export const levels = {
     test: true,
   },
 
-  // Smaller tests
+  // Alphabeta validity tests
+  testAlphabeta1: {
+    name: "Test level, ai should choose winning move 1",
+    sizeX: 4,
+    sizeY: 2,
+    board: [
+      33, 1, 1, 17,
+      1, 0, 0, 0,
+    ],
+    startTiles: [],
+    test: true
+  },
+  testAlphabeta2: {
+    name: "Test level, ai should choose winning move 2",
+    sizeX: 3,
+    sizeY: 3,
+    board: [
+      33, 1, 0, 
+      1, 1, 0,
+      0, 0, 17
+    ],
+    startTiles: [],
+    test: true
+  },
+  testAlphabeta3: {
+    name: "Test level, ai should choose winning move 3",
+    sizeX: 5,
+    sizeY: 5,
+    board: [
+      33, 1, 1, 1, 
+      0, 1, 0, 17,
+      0, 0, 1, 1,
+      0, 0, 0, 1
+    ],
+    startTiles: [],
+    test: true
+  },
+  testAlphabeta4: {
+    name: "Test level, ai should choose winning move 4",
+    sizeX: 3,
+    sizeY: 5,
+    board: [1, 0, 0, 1, 0, 0, 33, 1, 17, 0, 1, 0, 0, 0, 1],
+    startTiles: [],
+    test: true,
+  },
+  testAlphabeta5: {
+    name: "Test level, ai should choose winning move 5",
+    sizeX: 5,
+    sizeY: 5,
+    board: [
+      1, 33, 17, 0, 0, 
+      1, 33, 1, 1, 0, 
+      1, 1, 33, 1, 1, 
+      0, 1, 1, 1, 1, 
+      0, 0, 1, 1, 33,
+    ],
+    startTiles: [],
+    test: true,
+  },
+
+  // Basic heuristic tests
   testMovement: {
     name: "Test level, ai should move to open space",
     sizeX: 3,
     sizeY: 5,
     board: [1, 1, 0, 1, 1, 1, 0, 1, 17, 0, 33, 0, 0, 1, 1],
-    startTiles: [],
-    test: true,
-  },
-  testBlocking: {
-    name: "Test level, ai should block player",
-    sizeX: 3,
-    sizeY: 5,
-    board: [1, 0, 0, 1, 0, 0, 33, 1, 17, 0, 1, 0, 0, 0, 1],
     startTiles: [],
     test: true,
   },

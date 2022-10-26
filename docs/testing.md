@@ -20,9 +20,13 @@ Vitest also offers a browser to examine unit tests:
 npm run test-ui
 ```
 
-Unit tests cover most of the functions in the core logic `game.ts`.
+Unit tests cover most of the functions in the core logic `game.ts` with sample situations.  
+These have been thoroughly tested manually.
 
-Unit tests also cover basic functionality of the AI in `ai.ts`.
+Unit tests also cover basic functionality, alphabeta, and behaviour the AI in `ai.ts`.  
+Basic functionality: the AI can select a starting tile and move sheep on the board.  
+Alphabeta tests: the AI should be able to find a winning move from certain situations.  
+Behavioural tests: the AI heuristic works and makes the AI move to certain tiles.
 
 ## Unit test coverage
 
@@ -79,6 +83,6 @@ Level = Open, X-axis = depth, Y-axis= compute time in seconds
 
 ![](/docs/images/perf-graph.png)
 
-My implementation can compute down to depth 7 in a reasonable time, but to make gameplay smooth, I stick with depth 5 in the web build.
+My implementation can compute down to depth 7 in a reasonable time, but to make gameplay smooth, I stick with depth 6 in the web build.
 
 I'm really happy with the results!

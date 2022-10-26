@@ -152,7 +152,7 @@ export function Game({ setAppState, config }: GameProps) {
         newBoard,
         gameStatic.boardXSize,
         gameStatic.boardYSize,
-        5,
+        6,
         selectingStart,
         info.startTiles,
       );

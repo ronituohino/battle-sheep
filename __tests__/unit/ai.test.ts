@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { simulate } from "../../src/game/ai";
+import { GOOD, simulate } from "../../src/game/ai";
 import { coordinateToIndex } from "../../src/game/game";
 import { levels } from "../../src/levels";
 
 // Use these to control unit tests
-const aiDepth = 4;
+const aiDepth = 5;
 
 describe("ai", () => {
   it("can select starting tile", () => {
@@ -41,7 +41,47 @@ describe("ai", () => {
     expect(result[0]).toBe(levels.testFull.board);
   });
 
-  // Some obvious cases
+  // Testing if the alphabeta algorithm works
+  // It should be able to find winning states from the game tree and make those moves even without a heuristic
+  it("selects the winning move from two possibilities, 1", () => {
+    const result = simulate(levels.testAlphabeta1.board, levels.testAlphabeta1.sizeX, levels.testAlphabeta1.sizeY, aiDepth)
+
+    expect(result[0][2]).toBeGreaterThanOrEqual(18)
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+  })
+  it("selects the winning move from two possibilities, 2", () => {
+    const result = simulate(levels.testAlphabeta2.board, levels.testAlphabeta2.sizeX, levels.testAlphabeta2.sizeY, aiDepth)
+
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+  })
+  it("selects the winning move from two possibilities, 3", () => {
+    const result = simulate(levels.testAlphabeta3.board, levels.testAlphabeta3.sizeX, levels.testAlphabeta3.sizeY, aiDepth)
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+  })
+  it("selects the winning move from three possibilities, 4", () => {
+    const result = simulate(
+      levels.testAlphabeta4.board,
+      levels.testAlphabeta4.sizeX,
+      levels.testAlphabeta4.sizeY,
+      aiDepth,
+    );
+
+    expect(result[0][coordinateToIndex(1, 2, levels.testAlphabeta4.sizeX)]).toBeGreaterThanOrEqual(18);
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+  });
+  // aiDepth >= 5 for this to pass
+  it("selects the winning move from three possibilities, 5", () => {
+    const result = simulate(
+      levels.testAlphabeta5.board,
+      levels.testAlphabeta5.sizeX,
+      levels.testAlphabeta5.sizeY,
+      aiDepth,
+    );
+    expect(result[2]).toBeGreaterThanOrEqual(GOOD)
+  });
+
+  // This could be considered performance testing, since we need the heuristic for these tests
+  // However, I think even a basic heuristic makes these tests passable and is essential for the AI itself to work
   it("moves to an area with more free space", () => {
     const result = simulate(
       levels.testMovement.board,
@@ -51,17 +91,8 @@ describe("ai", () => {
     );
 
     // Ai should move to an area with more space available
-    expect(result[0][coordinateToIndex(1, 0, 3)]).toBeGreaterThanOrEqual(17);
-  });
-  it("blocks opponent from playing if possible", () => {
-    const result = simulate(
-      levels.testBlocking.board,
-      levels.testBlocking.sizeX,
-      levels.testBlocking.sizeY,
-      aiDepth,
-    );
-
-    // Ai should block player from making any further moves (prioritising early wins)
-    expect(result[0][coordinateToIndex(1, 2, 3)]).toBeGreaterThanOrEqual(17);
+    expect(result[0][coordinateToIndex(1, 0, 3)]).toBeGreaterThanOrEqual(18);
+    // And there isn't a winning move by minimax
+    expect(result[2]).toBeLessThan(GOOD)
   });
 });
