@@ -12,13 +12,10 @@
     "test": "vitest --run --dir __tests__/unit/",
     "performance": "vitest --run --dir __tests__/performance/",
     "coverage": "vitest run --coverage --dir __tests__/unit/",
-    "login": "firebase login",
-    "deploy": "firebase deploy",
-    "publish": "npm-run-all --parallel lint test --parallel build coverage --sequential login deploy"
+    "deploy": "npm-run-all --parallel lint test --parallel build coverage"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "firebase": "^9.9.4",
     "formik": "^2.2.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

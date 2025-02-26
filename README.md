@@ -5,7 +5,7 @@ Battle Sheep board game website for
 University of Helsinki.
 
 This project is (or was at some point) live at
-https://battle-sheep-game.web.app/
+https://battle-sheep.vercel.app/
 
 ### Documentation
 

@@ -37,7 +37,7 @@ I will use [Vitest](https://vitest.dev/) for unit
 testing. I might also use [Cypress](https://www.cypress.io/) for integration
 testing.
 
-The website will be deployed to [Firebase](https://firebase.google.com/).
+The website will be deployed to [Vercel](https://vercel.com/).
 
 I will try to detach the TypeScript code as much as possible from the rest of
 the web page code to make it easier to review.
