@@ -24,6 +24,19 @@ export const levels = {
     startTiles: [0, 1, 2, 5, 8, 10, 14, 16, 19, 22, 23, 24],
     test: false,
   },
+  island: {
+    name: "Island",
+    sizeX: 6,
+    sizeY: 6,
+    board: [
+      1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0,
+    ],
+    startTiles: [
+      0, 1, 2, 6, 9, 10, 11, 12, 16, 17, 18, 21, 22, 25, 27, 32, 33, 34,
+    ],
+    test: false,
+  },
   web: {
     name: "Web",
     sizeX: 6,

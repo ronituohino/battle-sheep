@@ -39,7 +39,7 @@ export function Config({ formik }: ConfigProps) {
                 : undefined;
 
               return (
-                <label key={key}>
+                <label key={key} aria-label={`Select level: ${key}`}>
                   <div
                     css={{
                       margin: 16,
